@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratt
+  labels:
+    app: ratt
+spec:
+  selector:
+    matchLabels:
+      app: ratt
+  replicas: 1
+  template:
+    metadata:
+      # annotations:
+      #   prometheus.io/scrape: "true"
+      #   prometheus.io/path: /metrics
+      #   prometheus.io/port: "8080"
+      labels:
+        app: ratt
+    spec:
+      containers:
+        - name: ratt
+          image: ratt
+          env:
+            - name: FAST_API_PORT
+              value: "8081"
+            - name: AWS_ENDPOINT
+              value: "http://minio:9000"
+            - name: NATS_URL
+              value: "nats://nats:4222"
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /app/configuration/creds
+            - name: WORKER_TYPE
+              value: "video"
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck
+          #     port: 8081
+      terminationGracePeriodSeconds: 300
+
