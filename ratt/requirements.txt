@@ -4,6 +4,8 @@ requests==2.31.0
 numpy==1.25.2
 matplotlib==3.8.0
 boto3==1.35.28
+nats_py==2.9.0
+python-json-logger==2.0.7
 # opencv-python==4.8.0.76  # For video processing and handling (YOLO might use this)
 
 # install via dockerfile

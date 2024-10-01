@@ -22,16 +22,18 @@ spec:
         - name: ratt
           image: ratt
           env:
-            - name: FAST_API_PORT
+            - name: FLASK_PORT
               value: "8081"
-            - name: AWS_ENDPOINT
+            - name: S3_ENDPOINT
               value: "http://minio:9000"
             - name: NATS_URL
               value: "nats://nats:4222"
-            - name: AWS_SHARED_CREDENTIALS_FILE
+            - name: S3_SHARED_CREDENTIALS_FILE
               value: /app/configuration/creds
             - name: WORKER_TYPE
               value: "video"
+            - name: WHEIGHTS_PATH
+              value: "/app/models/best.pt"
           # livenessProbe:
           #   httpGet:
           #     path: /healthcheck

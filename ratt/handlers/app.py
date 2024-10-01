@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import configuration.config as config
 
 
 class Routes:
@@ -54,4 +55,4 @@ class Routes:
             ), 200
 
     def run(self):
-        self.app.run(host='0.0.0.0', port=8080, debug=True)
+        self.app.run(host='0.0.0.0', port=config.FLASK_PORT, debug=True)
