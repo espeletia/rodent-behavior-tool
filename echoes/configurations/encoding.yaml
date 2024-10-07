@@ -1,0 +1,6 @@
+FfmpegPath: /usr/bin/ffmpeg
+FfprobePath: /usr/bin/ffprobe
+GrMagicPath: /usr/bin/gm
+AllowedClients: test,x
+MaxClipLength: 5
+

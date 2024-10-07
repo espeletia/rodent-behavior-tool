@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoes
+  labels:
+    app: echoes
+spec:
+  selector:
+    matchLabels:
+      app: echoes
+  replicas: 1
+  template:
+    metadata:
+      # annotations:
+      #   prometheus.io/scrape: "true"
+      #   prometheus.io/path: /metrics
+      #   prometheus.io/port: "8080"
+      labels:
+        app: echoes
+    spec:
+      initContainers:
+        - name: echoes-migrations
+          image: echoes-migrations
+          command: [ "/app/run_migrations" ]
+          env:
+            - name: SERVICE_NAME
+              value: echoes-migrations
+            - name: NATS_URL
+              value: "nats://nats:4222"
+      containers:
+        - name: echoes
+          image: echoes
+          env:
+            # - name: FLASK_PORT
+            #   value: "8081"
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck
+          #     port: 8081
+      terminationGracePeriodSeconds: 300
+
+

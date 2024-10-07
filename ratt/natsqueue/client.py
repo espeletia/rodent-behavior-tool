@@ -39,3 +39,9 @@ class NatsClient:
         logger.log_message(config.NATS_STREAM)
         ack = await self.js.publish(f"{config.NATS_ANALYSIS_RESULT_SUBJECT}",
                                     json.dumps(message).encode())
+
+    async def publish_video_encoding_job(self, message):
+        # logger.log_message(config.NATS_ANALYSIS_RESULT_SUBJECT)
+        # logger.log_message(config.NATS_STREAM)
+        ack = await self.js.publish(f"{config.NATS_ENCODER_VIDEO_JOB_SUBJECT}",
+                                    json.dumps(message).encode())
