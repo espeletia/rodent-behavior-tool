@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"strings"
 	"tusk/internal/domain"
 	"tusk/internal/usecases/auth"
 
@@ -14,6 +15,7 @@ const (
 	authHeader      = "Authorization"
 	userCtxKey      = "auth"
 	userTokenCtxKey = "token"
+	bearerPrefix    = "Bearer "
 )
 
 func WithUserToken(ctx context.Context, user *string) context.Context {
@@ -53,6 +55,11 @@ func Authentication(auth auth.AuthUsecaseInterface) mux.MiddlewareFunc {
 }
 
 func parseAuthHeader(r *http.Request) string {
-	jwtToken := r.Header.Get(authHeader)
-	return jwtToken
+	authHeader := r.Header.Get(authHeader)
+	if strings.HasPrefix(authHeader, bearerPrefix) {
+		split := strings.Split(authHeader, " ")
+		_, token := split[0], split[1]
+		return token
+	}
+	return ""
 }

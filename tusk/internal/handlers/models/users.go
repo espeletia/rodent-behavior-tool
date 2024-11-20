@@ -2,6 +2,7 @@ package models
 
 import "github.com/google/uuid"
 
+// swagger:model
 type UserData struct {
 	Username    string `json:"username"`
 	Email       string `json:"email"`
@@ -9,6 +10,7 @@ type UserData struct {
 	Password    string `json:"password"`
 }
 
+// swagger:model
 type User struct {
 	ID          uuid.UUID `json:"id"`
 	DisplayName string    `json:"display_name"`
@@ -16,11 +18,13 @@ type User struct {
 	Username    string    `json:"username"`
 }
 
+// swagger:model
 type LoginCreds struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
+// swagger:model
 type LoginResp struct {
 	Token string `json:"token"`
 }

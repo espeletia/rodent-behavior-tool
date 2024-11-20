@@ -64,6 +64,15 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	router.Handle("/login", userHandler.Login()).Methods("POST")
 	// router.Handle("/users", userHandler.GetUsersByUsernamePattern()).Methods("GET")
 	router.Handle("/register", userHandler.CreateUser()).Methods("PUT")
+
+	specHandler, _, err := handlers.HandleSwaggerFile()
+	if err != nil {
+		logger.Error("Swagger handler disabled, cause:", zap.Error(err))
+	} else {
+		router.Handle("/swagger.json", specHandler).Methods("GET")
+		router.Handle("/swagger", handlers.HandleSwaggerUI()).Methods("GET")
+	}
+
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedHeaders:   []string{"*"},
