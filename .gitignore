@@ -4,3 +4,4 @@ build/
 test_images/
 best.pt
 gen/
+swagger.yaml

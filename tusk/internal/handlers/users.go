@@ -6,6 +6,11 @@ import (
 	"tusk/internal/domain"
 	"tusk/internal/handlers/models"
 	"tusk/internal/usecases"
+	"tusk/internal/util"
+
+	"github.com/nextap-solutions/openapi3Struct"
+
+	"github.com/getkin/kin-openapi/openapi3"
 
 	"go.uber.org/zap"
 )
@@ -20,6 +25,24 @@ func NewUserHandler(userusecase *usecases.UserUsecase, authUsecase *usecases.Aut
 		userUsecase: userusecase,
 		authUsecase: authUsecase,
 	}
+}
+
+var PingOp = openapi3Struct.Path{
+	Path: "/",
+	Item: openapi3.PathItem{
+		Get: &openapi3.Operation{
+			Tags:        []string{"Ping"},
+			OperationID: "ping",
+			Description: "ping the API to test connectivity",
+			Responses: map[string]*openapi3.ResponseRef{
+				"204": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("No content"),
+					},
+				},
+			},
+		},
+	},
 }
 
 func (ph *UserHandler) Ping() http.HandlerFunc {
@@ -38,6 +61,29 @@ func (ph *UserHandler) Ping() http.HandlerFunc {
 	}
 }
 
+var MeOp = openapi3Struct.Path{
+	Path: "/me",
+	Item: openapi3.PathItem{
+		Get: &openapi3.Operation{
+			Tags:        []string{"Users"},
+			OperationID: "me",
+			Description: "get information about the user currently logged in",
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("User"),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: openapi3.NewSchemaRef("#/components/schemas/User", nil),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
 func (uu *UserHandler) Me() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -53,6 +99,42 @@ func (uu *UserHandler) Me() http.HandlerFunc {
 			http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		}
 	}
+}
+
+var LoginOp = openapi3Struct.Path{
+	Path: "/login",
+	Item: openapi3.PathItem{
+		Post: &openapi3.Operation{
+			Tags:        []string{"Users"},
+			OperationID: "login",
+			Description: "request an access token based on user credentials",
+			RequestBody: &openapi3.RequestBodyRef{
+				Value: &openapi3.RequestBody{
+					Description: "Add login credentials for the user",
+					Required:    true,
+					Content: map[string]*openapi3.MediaType{
+						"application/json": {
+							Schema: &openapi3.SchemaRef{
+								Ref: "#/components/schemas/LoginCreds",
+							},
+						},
+					},
+				},
+			},
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("Token"),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: openapi3.NewSchemaRef("#/components/schemas/LoginResp", nil),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 func (uu *UserHandler) Login() http.HandlerFunc {
@@ -82,6 +164,42 @@ func (uu *UserHandler) Login() http.HandlerFunc {
 		}
 
 	}
+}
+
+var CreateUserOp = openapi3Struct.Path{
+	Path: "/register",
+	Item: openapi3.PathItem{
+		Put: &openapi3.Operation{
+			Tags:        []string{"Users"},
+			OperationID: "createUser",
+			Description: "create a new user",
+			RequestBody: &openapi3.RequestBodyRef{
+				Value: &openapi3.RequestBody{
+					Description: "Add user data",
+					Required:    true,
+					Content: map[string]*openapi3.MediaType{
+						"application/json": {
+							Schema: &openapi3.SchemaRef{
+								Ref: "#/components/schemas/UserData",
+							},
+						},
+					},
+				},
+			},
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("User"),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: openapi3.NewSchemaRef("#/components/schemas/User", nil),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 func (uu *UserHandler) CreateUser() http.HandlerFunc {
