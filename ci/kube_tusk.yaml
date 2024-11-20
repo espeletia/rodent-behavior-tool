@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tusk
+  labels:
+    app: tusk
+spec:
+  selector:
+    matchLabels:
+      app: tusk
+  replicas: 1
+  template:
+    metadata:
+      # annotations:
+      #   prometheus.io/scrape: "true"
+      #   prometheus.io/path: /metrics
+      #   prometheus.io/port: "8080"
+      labels:
+        app: tusk
+    spec:
+      initContainers:
+        - name: tusk-migrations
+          image: tusk-migrations
+          command: [ "/app/run_migrations" ]
+          env:
+            - name: SERVICE_NAME
+              value: tusk-migrations
+            - name: NATS_URL
+              value: "nats://nats:4222"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgresql-ratt-api:5432/ratt-api?sslmode=disable"
+      containers:
+        - name: tusk
+          image: tusk
+          env:
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgresql-ratt-api:5432/ratt-api?sslmode=disable"
+            # - name: FLASK_PORT
+            #   value: "8081"
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck
+          #     port: 8081
+      terminationGracePeriodSeconds: 300
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: tusk
+#   labels:
+#     app: tusk
+# spec:
+#   ports:
+#     - port: 8080
+#       targetPort: 8080
+#       protocol: TCP
+#   selector:
+#     app: tusk

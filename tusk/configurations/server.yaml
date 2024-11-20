@@ -1,0 +1,9 @@
+Port: 8080
+DebugPort: 8084
+DebugEnable: true
+TLSEnable: false
+TLSCertPath: ./certs/localhost.crt
+TLSKeyPath: ./certs/localhost.key
+WriteTimeout: 5s
+ReadTimeout: 5s
+ShutdownTimeout: 5s

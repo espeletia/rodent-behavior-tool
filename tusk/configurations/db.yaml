@@ -1,0 +1,3 @@
+DriverName: postgres
+ConnectionURI: postgres://postgres:postgres@localhost:5434/ratt-api?sslmode=disable
+RunMigration: false

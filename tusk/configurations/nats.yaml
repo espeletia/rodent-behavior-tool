@@ -1,0 +1,22 @@
+Host: nats://nats:4222
+
+JobVideoConsumer: videoWorker
+JobVideoSubject: mediaVideoJobs
+
+
+Streams:
+  Encoder:
+    Name: ENCODER
+    Subjects: 
+      - ENCODER.*
+    MaxMsg: 300000
+    MaxRetry: 2
+    MaxAge: 240h
+    AckWait: 5m
+    DuplicateWindow: 2m
+    Consumers:
+      - Name: videoWorker
+        AckWait: 5m
+        AckPending: 1000
+        Subject: mediaVideoJobs
+

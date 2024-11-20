@@ -3,54 +3,39 @@ load('ext://restart_process', 'docker_build_with_restart')
 
 load_dynamic('./ci/minio/minio.Tiltfile')
 load_dynamic('./ci/nats/nats.Tiltfile')
+load_dynamic('./ci/postgres/postgres.Tiltfile')
 
 k8s_yaml("ci/kube_ratt.yaml")
 k8s_yaml("ci/kube_echoes.yaml")
+k8s_yaml("ci/kube_tusk.yaml")
 
-local_resource(
-      'compile echoes',
-      'cd echoes && bash ./ci/build.sh',
+def app(name, special_dockerfile = False):
+    local_resource(
+      'compile-%s' % name,
+      'cd %s && ./ci/build.sh' % name,
       deps=[
-      './echoes/',
-      './ghiaccio/'
+      './%s/' % name,
+      './iris/'
       ],
       ignore=[
       'tilt_modules',
       'Tiltfile',
-      'graph/schema.graphqls',
-      'echoes/build',
-      'dep',
-      'ci/docker-compose.yaml',
-      'swagger.yaml',
-      '**/testdata'
+      './iris/proto/gen',
+      '%s/graph/schema.graphqls' % name,
+      '%s/build' % name,
+      '%s/dep' % name,
+      '%s/ci/docker-compose.yaml' % name,
+      '%s/swagger.yaml' % name,
+      '%s/internal/handlers/swagger.yaml' % name,
+      '%s/internal/handlers/generated.go' % name,
+      '%s/migrations/*' % name,
+      '%s/cmd/migrations/*' % name,
+      '%s/cmd/dataInit/*' % name,
+      '%s/**/testdata' % name
       ],
-      labels=["compile"],
-  )
-  
-docker_build_with_restart('echoes',
-    '.',
-    dockerfile='./echoes/ci/Dockerfile',
-    entrypoint='/app/start_server',
-    only=[
-        './echoes/build',
-        './echoes/configurations',
-        './echoes/certs',
-        './echoes/videos',
-        './echoes/migrations',
-        './echoes/cmd/migrations'
-    ],
-    live_update=[
-        sync('./configurations', '/app/configurations'),
-        sync('./build', '/app')
-    ]
-)
-
-
-
-
-name = "echoes"
-
-local_resource(
+      resource_deps=['nats', 'minio', 'postgresql']
+    )
+    local_resource(
         'compile-%s-migrations' % name,
         'cd %s && ./ci/build_migrations.sh' % name,
         deps=[
@@ -61,25 +46,99 @@ local_resource(
         resource_deps=['nats', 'minio', 'postgresql']
     )
 
+    if special_dockerfile:
+        docker_build_with_restart('%s-migrations' % name,
+            '.',
+            dockerfile='./%s/ci/Dockerfile' % name,
+            entrypoint='/app/run_migrations',
+            only=[
+                './%s/build' % name,
+                './%s/ci' % name,
+                './%s/configurations' % name,
+                './%s/certs' % name,
+                './%s/migrations' % name,
+                './%s/videos' % name
+            ],
+            live_update=[
+                sync('./%s/build' % name , '/app'),
+                sync('./%s/configurations' % name , '/app/configurations')
+            ],
+            build_args={"app": name})
 
-docker_build_with_restart('echoes-migrations',
-           '.',
-           dockerfile='echoes/ci/Dockerfile',
-           entrypoint='/app/run_migrations',
-           only=[
-               './%s/build' % name,
-               './%s/ci' % name,
-               './%s/configurations' % name,
-               './%s/certs' % name,
-               './echoes/videos',
-               './%s/migrations' % name
-           ],
-           live_update=[
-               sync('./%s/build' % name , '/app'),
-               sync('./%s/configurations' % name , '/app/configurations')
-           ],
-           build_args={"app": name})
+        docker_build_with_restart('%s' % name,
+            '.',
+            dockerfile='./%s/ci/Dockerfile' % name,
+            entrypoint='/app/start_server',
+            only=[
+                './%s/build' % name,
+                './%s/dep' % name,
+                './%s/files' % name,
+                './%s/ci' % name,
+                './%s/configurations' % name,
+                './%s/certs' % name,
+                './%s/migrations' % name,
+                './%s/videos' % name
+            ],
+            live_update=[
+                sync('./%s/build' % name , '/app'),
+                sync('./%s/configurations' % name , '/app/configurations')
+            ],
+            build_args={"app": name})
+    else:
+        docker_build_with_restart('%s-migrations' % name,
+            '.',
+            dockerfile='./ci/Dockerfile',
+            entrypoint='/app/run_migrations',
+            only=[
+                './%s/build' % name,
+                './%s/ci' % name,
+                './%s/configurations' % name,
+                './%s/certs' % name,
+                './%s/migrations' % name,
+                './%s/videos' % name
+            ],
+            live_update=[
+                sync('./%s/build' % name , '/app'),
+                sync('./%s/configurations' % name , '/app/configurations')
+            ],
+            build_args={"app": name})
 
+        docker_build_with_restart('%s' % name,
+            '.',
+            dockerfile='ci/Dockerfile',
+            entrypoint='/app/start_server',
+            only=[
+                './%s/build' % name,
+                './%s/configurations' % name,
+                './%s/certs' % name,
+                './%s/migrations' % name,
+                './%s/videos' % name
+            ],
+            live_update=[
+                sync('./%s/build' % name , '/app'),
+                sync('./%s/configurations' % name , '/app/configurations')
+            ],
+            build_args={"app": name})
+
+
+
+app('echoes', True)
+app('tusk')
+
+local_resource(
+    'reg-tusk',
+    'cd tusk && go generate cmd/main.go',
+    deps=[
+    './tusk/graph/',
+    ],
+    ignore=[
+    './tusk/graph/**/*.go*',
+    './tusk/graph/generated',
+    './tusk/graph/model',
+    './tusk/migrations/migrations.xml',
+    ],
+    resource_deps=['postgresql']
+)
 
 
 docker_build_with_restart('ratt',
@@ -93,6 +152,7 @@ docker_build_with_restart('ratt',
           sync('./ratt/' , '/app/'),
       ])
 
-k8s_resource('ratt', port_forwards=["0.0.0.0:8080:8081"], labels=["AI"], resource_deps=['nats','minio'])
-k8s_resource('echoes', labels=["ENCODING"])
+k8s_resource('ratt', port_forwards=["0.0.0.0:8083:8081"], labels=["AI"], resource_deps=['nats','minio'])
+k8s_resource('echoes', labels=["ENCODING"], resource_deps=['nats', 'minio'])
+k8s_resource('tusk', labels=["BE"], port_forwards=["0.0.0.0:8081:8080"], resource_deps=['nats', 'minio'])
 
