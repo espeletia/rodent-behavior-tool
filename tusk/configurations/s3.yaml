@@ -1,0 +1,10 @@
+URL: http://minio:9000
+Credentials: configurations/creds
+AccessKey: minio123
+SecretAccessKey: minio123
+UploadsPathPrefix: uploads
+Region: eu-central-1
+Bucket: test
+prod: false
+
+

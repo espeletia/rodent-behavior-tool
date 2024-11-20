@@ -35,10 +35,5 @@ func (v *VideoMediaEncoder) EncodeVideoWith256(ctx context.Context, videoPath st
 		return "", fmt.Errorf("failed to run FFMPEG: %v", err)
 	}
 
-	//     'ffmpeg', '-i', input_file_path,
-	//     '-c:v', 'libx264', '-c:a', 'aac', '-strict', 'experimental',
-	//     output_file_path
-	// ]
-
 	return outputFile, nil
 }
