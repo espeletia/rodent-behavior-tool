@@ -6,7 +6,7 @@ branding:
 
 inputs:
   service:
-    description:
+    description: service parameter
     required: true
 
 runs:
