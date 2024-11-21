@@ -18,7 +18,7 @@ runs:
         dockerfile: ./tusk/ci/Dockerfile_migrations
 
     - name: Generate Tusk files
-      working-directory: ./odin
+      working-directory: ./tusk
       shell: bash
       run: |
         go generate ./cmd/main.go
