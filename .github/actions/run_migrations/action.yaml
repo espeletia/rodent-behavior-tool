@@ -32,10 +32,10 @@ runs:
   steps:
     - name: Build go migrations
       shell: bash
-      working-directory: ./odin
+      working-directory: ./tusk
       run: >
-        chmod +x ./ci/build_schema_migrations.sh &&
-        ./ci/build_schema_migrations.sh
+        chmod +x ./ci/build_migrations.sh &&
+        ./ci/build_migrations.sh
         
 
     - name: Build image
