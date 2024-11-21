@@ -26,8 +26,6 @@ jobs:
               - 'tusk/**'
             echoes:
               - 'echoes/**'
-            default:
-              - '.github/**'
 
   golangci-lint:
     needs: matrix
@@ -36,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tf: ${{ fromJSON(needs.matrix.outputs.changes) || '["default"]' }}
+        tf: ${{ fromJSON(needs.matrix.outputs.changes)}}
     services:
       postgres:
         image: postgres:17
