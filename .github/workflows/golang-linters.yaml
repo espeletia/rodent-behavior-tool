@@ -23,7 +23,7 @@ jobs:
           debug: true
           filters: |
             tusk:
-              - 'tuks/**'
+              - 'tusk/**'
             echoes:
               - 'echoes/**'
             default:
