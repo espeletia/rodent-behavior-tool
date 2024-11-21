@@ -24,8 +24,8 @@ jobs:
           filters: |
             tusk:
               - 'tusk/**'
-            echoes:
-              - 'echoes/**'
+            # echoes:
+            #   - 'echoes/**'
 
   golangci-lint:
     needs: matrix
