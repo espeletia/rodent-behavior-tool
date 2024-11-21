@@ -1,6 +1,7 @@
 package main
 
 //go:generate go run github.com/go-jet/jet/v2/cmd/jet -dsn=postgres://postgres:postgres@localhost:5434/ratt-api?sslmode=disable -path=../internal/ports/database/gen
+//go:generate go run ./openapi/main.go
 
 import (
 	"log"

@@ -57,7 +57,6 @@ func (ph *UserHandler) Ping() http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		return
 	}
 }
 

@@ -1,0 +1,25 @@
+name: Generate Tusk service files
+description: Generate Tusk service files
+branding:
+  icon: 'upload-cloud'
+  color: 'red'
+
+runs:
+  using: composite
+  steps:
+    - name: Install go deps
+      shell: bash
+      run: |
+        cd tusk && go mod tidy
+
+    - name: Run migrations
+      uses: ./.github/actions/run_migrations
+      with:
+        dockerfile: ./tusk/ci/Dockerfile_migrations
+
+    - name: Generate Tusk files
+      working-directory: ./odin
+      shell: bash
+      run: |
+        go generate ./cmd/main.go
+

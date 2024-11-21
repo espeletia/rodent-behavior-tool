@@ -1,0 +1,77 @@
+name: golangci-lint
+
+on: pull_request
+
+env:
+  GO_VERSION: stable
+  GOLANGCI_LINT_VERSION: v1.59
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      changes: "${{ steps.changes.outputs.changes }}"
+    steps:
+      - name: Actions checkout
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: ${{ github.ref }}
+          ref: ${{ github.ref }}
+          filters: |
+            tusk:
+              - 'tuks/**'
+            echoes:
+              - 'echoes/**'
+
+  golangci-lint:
+    needs: matrix
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        tf: "${{ fromJSON(needs.matrix.outputs.changes) }}"
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          TZ: 'GMT'
+          PGTZ: 'GMT'
+          POSTGRES_DB: ratt-api
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5434:5432
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare services
+        uses: ./.github/actions/prepare_services
+
+      - name: Generate service files
+        uses: ./.github/actions/generate_code
+        with:
+          service: ${{ matrix.tf }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.60.3
+          golangci-lint --version
+
+      - name: golangci-lint ${{ matrix.tf }}
+        run: |
+          cd ${{ matrix.tf }}
+          golangci-lint run ./...
+

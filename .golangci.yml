@@ -1,0 +1,108 @@
+run:
+  # Depends on your hardware, my laptop can survive 8 threads.
+  # concurrency: 8
+  # I really care about the result, so I'm fine to wait for it.
+  timeout: 30m
+  # Fail if the error was met.
+  issues-exit-code: 1
+  # This is very important, bugs in tests are not acceptable either.
+  tests: true
+  # With the read-only mode linter will fail if go.mod file is outdated.
+  modules-download-mode: readonly
+  # Till today I didn't know this param exists, never ran 2 golangci-lint at once.
+  allow-parallel-runners: false
+  # Keep this empty to use the Go version from the go.mod file.
+  go: ""
+
+issues:
+  exclude:
+    - "G115" # integer overflow conversion int -> int32 (it's an error through the whole codebase, it'd take a lot of time to fix)
+    - "os.Setenv()"
+  exclude-rules:
+    - linters:
+      - govet
+      text: "request.go" # this allows us to keep govet and make it skip the structtag error
+  # I found it strange to skip the errors, setting 0 to have all the results.
+  max-issues-per-linter: 0
+  # Same here, nothing should be skipped to not miss errors.
+  max-same-issues: 0
+  # When set to `true` linter will analyze only new code which are
+  # not committed or after some specific revision. This is a cool 
+  # feature when you're going to introduce linter into a big project.
+  # But I prefer going gradually package by package. 
+  # So, it's set to `false` to scan all code.
+  new: false
+  # 2 other params regarding git integration
+  # Even with a recent GPT-4 release I still believe that
+  # I know better how to do my job and fix the suggestions.
+  fix: false
+
+linters:
+  # Disable all linters.
+  # Default: false
+  disable-all: true
+  # Enable specific linter
+  # https://golangci-lint.run/usage/linters/#enabled-by-default
+  enable:
+    # Check for pass []any as any in variadic func(...any).
+    # Rare case but saved me from debugging a few times.
+    - asasalint
+    # I prefer plane ASCII identifiers.
+    # Symbol `∆` instead of `delta` looks cool but no thanks.
+    - asciicheck
+    # Checks for dangerous unicode character sequences.
+    # Super rare but why not to be a bit paranoid?
+    - bidichk
+    # Checks whether HTTP response body is closed successfully.
+    - bodyclose
+    # Check for two durations multiplied together.
+    - durationcheck
+
+    # Test-related checks. All of them are good.
+    - tenv
+    - testableexamples
+    # - thelper
+    # - tparallel
+    
+    # Finds shadowing of Go's predeclared identifiers.
+    # I hear a lot of complaints from junior developers.
+    # But after some time they find it very useful.
+    # - predeclared
+    # Check whether the function uses a non-inherited context.
+    # - contextcheck
+
+    # - errcheck
+    - errorlint
+    - gosimple
+    - govet # this linter has problems with r2d2 and the enums for the events, more specifically the fact that there are repeated json tags in the params struct
+    - gosec
+    - ineffassign
+    # - exhaustive
+    # - exhaustruct
+    
+    # Remove unnecessary type conversions, make code cleaner
+    - unconvert
+    # Might be noisy but better to know what is unused
+    # - unparam
+    # Must have. Finds unused declarations.
+    # - unused
+
+    # formats
+    # - gofmt
+    # - gofumpt
+    # - goimports
+
+    # - misspell
+    # - prealloc
+    # Checks that package variables are not reassigned.
+    # Super rare case but can catch bad things (like `io.EOF = nil`)
+    - reassign
+    # Detect the possibility to use variables/constants from stdlib.
+    # - usestdlibvars
+    # Finds wasted assignment statements.
+    # - wastedassign
+  
+  # Enable only fast linters from enabled linters set (first run won't be fast)
+  # Default: false
+  fast: true
+
