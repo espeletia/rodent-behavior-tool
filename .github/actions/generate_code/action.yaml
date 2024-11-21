@@ -17,4 +17,4 @@ runs:
 
     - name: Generate code for tusk
       if: inputs.service == 'tusk' 
-      uses: ./.github/actions/generate_code/tusj
+      uses: ./.github/actions/generate_code/tusk
