@@ -1,0 +1,59 @@
+name: Run migrations
+description: Builds dockerfile migrations and runs them against the database
+
+inputs:
+  dockerfile:
+    description: The path + name of the Dockerfile you want to build (-f flag)
+    required: false
+    default: 'Dockerfile'
+  docker_build_context:
+    description: The docker build context (usually '.')
+    required: false
+    default: '.'
+  additional_args:
+    description: The docker build arguments
+    required: false
+    default: ''
+  databaseUrl:
+    description: db url
+    required: false
+    default: 'postgres://postgres:postgres@172.17.0.1:5434/ratt-api?sslmode=disable'
+  databaseUsername:
+    description: db username
+    required: false
+    default: 'postgres'
+  databasePassword:
+    description: db psw
+    required: false
+    default: 'postgres'
+
+runs:
+  using: composite
+  steps:
+    - name: Build go migrations
+      shell: bash
+      working-directory: ./tusk
+      run: >
+        chmod +x ./ci/build_migrations.sh &&
+        ./ci/build_migrations.sh
+        
+
+    - name: Build image
+      shell: bash
+      run: >
+        docker build ${{ inputs.docker_build_context }}
+        -f ${{ inputs.dockerfile }}
+        -t migrations:latest
+        ${{ inputs.additional_args }}
+
+    - name: Run migrations
+      shell: bash
+      run:
+        docker run
+        --name migrations
+        --env DATABASE_URL="${{ inputs.databaseUrl }}"
+        --env DATABASE_USERNAME="${{ inputs.databaseUsername }}"
+        --env DATABASE_PASSWORD="${{ inputs.databasePassword }}"
+        migrations:latest
+
+
