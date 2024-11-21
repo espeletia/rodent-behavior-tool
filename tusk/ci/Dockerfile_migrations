@@ -9,6 +9,6 @@ ADD ./${app}/migrations /app/migrations
 
 WORKDIR /app
 
-ENTRYPOINT ["bash", "/app/run_migrations"]
+ENTRYPOINT ./app/run_migrations
 
 
