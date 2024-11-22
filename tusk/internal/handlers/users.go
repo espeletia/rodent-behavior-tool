@@ -152,7 +152,6 @@ func (uu *UserHandler) Login() http.HandlerFunc {
 			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
-		zap.L().Info("HIT", zap.Any("places", usr))
 		// Convert the result to JSON and write to the response
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(models.LoginResp{
@@ -211,7 +210,6 @@ func (uu *UserHandler) CreateUser() http.HandlerFunc {
 			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
-		zap.L().Info("userData", zap.Any("userData", userData))
 
 		defer r.Body.Close()
 
@@ -220,7 +218,6 @@ func (uu *UserHandler) CreateUser() http.HandlerFunc {
 			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
-		zap.L().Info("HIT", zap.Any("places", usr))
 		// Convert the result to JSON and write to the response
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(mapDomainUserToModelUser(*usr))

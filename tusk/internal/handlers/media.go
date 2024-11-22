@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/nextap-solutions/openapi3Struct"
 	"net/http"
 	"os"
 	"path/filepath"
 	"tusk/internal/ports"
+	"tusk/internal/util"
+
+	"github.com/getkin/kin-openapi/openapi3"
 	"tusk/internal/usecases"
 
 	"go.uber.org/zap"
@@ -24,6 +28,131 @@ func NewMediaHandler(mediaUsecase *usecases.MediaUsecase) *MediaHandler {
 		mediaUsecase:  mediaUsecase,
 		maxUploadSize: 50 * 1024 * 1024,
 	}
+}
+
+var UploadOp = openapi3Struct.Path{
+	Path: "/upload",
+	Item: openapi3.PathItem{
+		Put: &openapi3.Operation{
+			Tags:        []string{"Media"},
+			OperationID: "uploadMedia",
+			Description: "Upload a media file (image or video).",
+			RequestBody: &openapi3.RequestBodyRef{
+				Value: &openapi3.RequestBody{
+					Description: "File upload in `multipart/form-data` format. Allowed file types: JPEG, PNG, MP4, MPEG.",
+					Required:    true,
+					Content: map[string]*openapi3.MediaType{
+						"multipart/form-data": {
+							Schema: &openapi3.SchemaRef{
+								Value: &openapi3.Schema{
+									Type: "object",
+									Properties: map[string]*openapi3.SchemaRef{
+										"file": {
+											Value: &openapi3.Schema{
+												Type:   "string",
+												Format: "binary",
+											},
+										},
+									},
+									Required: []string{"file"},
+								},
+							},
+						},
+					},
+				},
+			},
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("File uploaded successfully."),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: &openapi3.SchemaRef{
+									Value: &openapi3.Schema{
+										Type: "object",
+										Properties: map[string]*openapi3.SchemaRef{
+											"message": {
+												Value: &openapi3.Schema{
+													Type:    "string",
+													Example: "File uploaded successfully: leseni.png",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				"400": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("Invalid file or bad request."),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: &openapi3.SchemaRef{
+									Value: &openapi3.Schema{
+										Type: "object",
+										Properties: map[string]*openapi3.SchemaRef{
+											"error": {
+												Value: &openapi3.Schema{
+													Type:    "string",
+													Example: "Invalid file type.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				"413": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("File too large."),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: &openapi3.SchemaRef{
+									Value: &openapi3.Schema{
+										Type: "object",
+										Properties: map[string]*openapi3.SchemaRef{
+											"error": {
+												Value: &openapi3.Schema{
+													Type:    "string",
+													Example: "File too big.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				"500": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("Internal server error."),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: &openapi3.SchemaRef{
+									Value: &openapi3.Schema{
+										Type: "object",
+										Properties: map[string]*openapi3.SchemaRef{
+											"error": {
+												Value: &openapi3.Schema{
+													Type:    "string",
+													Example: "Failed to upload file.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 func (mh *MediaHandler) Upload() http.HandlerFunc {
