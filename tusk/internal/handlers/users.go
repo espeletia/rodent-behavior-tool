@@ -11,8 +11,6 @@ import (
 	"github.com/nextap-solutions/openapi3Struct"
 
 	"github.com/getkin/kin-openapi/openapi3"
-
-	"go.uber.org/zap"
 )
 
 type UserHandler struct {
