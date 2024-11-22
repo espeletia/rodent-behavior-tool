@@ -91,6 +91,7 @@ func main() {
 	p.AddPath(handlers.MeOp)
 	p.AddPath(handlers.LoginOp)
 	p.AddPath(handlers.CreateUserOp)
+	p.AddPath(handlers.UploadOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {

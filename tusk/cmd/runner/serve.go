@@ -7,6 +7,7 @@ import (
 	"tusk/internal/handlers"
 	"tusk/internal/middleware"
 	"tusk/internal/ports/database"
+	"tusk/internal/ports/filemanager"
 	"tusk/internal/ports/tokens"
 	"tusk/internal/setup"
 	"tusk/internal/usecases"
@@ -47,19 +48,32 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	if err != nil {
 		return nil, err
 	}
+	httpClient := &http.Client{
+		Transport: http.DefaultTransport,
+	}
+
+	s3client, err := setup.SetupS3Client(configuration.S3Config, httpClient)
+	if err != nil {
+		return nil, err
+	}
+
 	tokenGenerator := tokens.NewTokenGenerator(configuration.JWTConfig.Signature, configuration.JWTConfig.Expiration)
+	fileManager := filemanager.NewS3FileManager(s3client)
 	// placeStore := database.NewDatabasePlaceStore(dbconn)
 	userStore := database.NewUserDatabaseStore(dbconn)
 	userUsecase := usecases.NewUserUsecase(userStore)
+	mediaUsecase := usecases.NewMediaUsecase(fileManager)
 	// placeUsecase := usecases.NewPlaceUsecase(placeStore)
 	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator)
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
+	mediaHandler := handlers.NewMediaHandler(mediaUsecase)
 	// placeHandler := handlers.NewPlaceHandler(placeUsecase)
 
 	router := mux.NewRouter()
 	router.Use(middleware.Authentication(authUsecase))
 	router.Handle("/", userHandler.Ping()).Methods("GET")
 	router.Handle("/me", userHandler.Me()).Methods("GET")
+	router.Handle("/upload", mediaHandler.Upload()).Methods("PUT")
 	// router.Handle("/places", placeHandler.GetPlacesByViewport()).Methods("POST")
 	router.Handle("/login", userHandler.Login()).Methods("POST")
 	// router.Handle("/users", userHandler.GetUsersByUsernamePattern()).Methods("GET")
