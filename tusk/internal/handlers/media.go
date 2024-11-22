@@ -194,6 +194,10 @@ func (mh *MediaHandler) Upload() http.HandlerFunc {
 		filename := filepath.Base(handler.Filename)
 
 		tmpDir, err := createTempDir("tmp")
+		if err != nil {
+			http.Error(w, "Failed to save file", http.StatusInternalServerError)
+			return
+		}
 
 		// Reset file pointer
 		file.Seek(0, 0)
@@ -226,7 +230,7 @@ func isValidFileType(contentType string) bool {
 }
 
 func createTempDir(str string) (string, error) {
-	dir, err := os.MkdirTemp("", fmt.Sprintf("%d_*", str))
+	dir, err := os.MkdirTemp("", fmt.Sprintf("%s_*", str))
 	if err != nil {
 		return "", err
 	}

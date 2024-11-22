@@ -53,6 +53,9 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	}
 
 	s3client, err := setup.SetupS3Client(configuration.S3Config, httpClient)
+	if err != nil {
+		return nil, err
+	}
 
 	tokenGenerator := tokens.NewTokenGenerator(configuration.JWTConfig.Signature, configuration.JWTConfig.Expiration)
 	fileManager := filemanager.NewS3FileManager(s3client)
