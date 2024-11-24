@@ -1,16 +1,20 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/nextap-solutions/openapi3Struct"
 	"net/http"
 	"os"
 	"path/filepath"
+	"tusk/internal/handlers/models"
 	"tusk/internal/ports"
 	"tusk/internal/util"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/nextap-solutions/openapi3Struct"
+
 	"tusk/internal/usecases"
+
+	"github.com/getkin/kin-openapi/openapi3"
 
 	"go.uber.org/zap"
 	// "go.uber.org/zap"
@@ -64,22 +68,10 @@ var UploadOp = openapi3Struct.Path{
 			Responses: map[string]*openapi3.ResponseRef{
 				"200": {
 					Value: &openapi3.Response{
-						Description: util.ToPointer("File uploaded successfully."),
+						Description: util.ToPointer("Uploaded file s3 url"),
 						Content: map[string]*openapi3.MediaType{
 							"application/json": {
-								Schema: &openapi3.SchemaRef{
-									Value: &openapi3.Schema{
-										Type: "object",
-										Properties: map[string]*openapi3.SchemaRef{
-											"message": {
-												Value: &openapi3.Schema{
-													Type:    "string",
-													Example: "File uploaded successfully: leseni.png",
-												},
-											},
-										},
-									},
-								},
+								Schema: openapi3.NewSchemaRef("#/components/schemas/UploadResponse", nil),
 							},
 						},
 					},
@@ -208,15 +200,21 @@ func (mh *MediaHandler) Upload() http.HandlerFunc {
 			return
 		}
 
-		err = mh.mediaUsecase.DefaultFileUpload(ctx, tempFile.Path(), contentType, filename)
+		url, err := mh.mediaUsecase.DefaultFileUpload(ctx, tempFile.Path(), contentType, filename)
 		if err != nil {
 			http.Error(w, "Failed to upload file", http.StatusInternalServerError)
 			zap.L().Error("S3 Upload Error:", zap.Error(err))
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(models.UploadResponse{
+			UploadUrl: url,
+		})
+		if err != nil {
+			http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "File uploaded successfully: %s", filename)
 	}
 }
 
