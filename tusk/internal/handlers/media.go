@@ -211,6 +211,9 @@ func (mh *MediaHandler) Upload() http.HandlerFunc {
 		err = json.NewEncoder(w).Encode(models.UploadResponse{
 			UploadUrl: url,
 		})
+		if err != nil {
+			http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		}
 		w.WriteHeader(http.StatusOK)
 	}
 }
