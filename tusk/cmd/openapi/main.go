@@ -92,6 +92,8 @@ func main() {
 	p.AddPath(handlers.LoginOp)
 	p.AddPath(handlers.CreateUserOp)
 	p.AddPath(handlers.UploadOp)
+	p.AddPath(handlers.CreateVideoOp)
+	p.AddPath(handlers.GetVideoByIDOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {
