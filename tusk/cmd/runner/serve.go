@@ -57,27 +57,44 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 		return nil, err
 	}
 
+	// token port
 	tokenGenerator := tokens.NewTokenGenerator(configuration.JWTConfig.Signature, configuration.JWTConfig.Expiration)
+
+	// s3 file management port
 	fileManager := filemanager.NewS3FileManager(s3client)
-	// placeStore := database.NewDatabasePlaceStore(dbconn)
+
+	// database ports
 	userStore := database.NewUserDatabaseStore(dbconn)
+	mediaStore := database.NewMediaDatabaseStore(dbconn)
+	videoStore := database.NewVideoDatabaseStore(dbconn)
+
+	// usecases
 	userUsecase := usecases.NewUserUsecase(userStore)
-	mediaUsecase := usecases.NewMediaUsecase(fileManager, configuration.S3Config.URL, configuration.S3Config.UploadsPathPrefix, configuration.S3Config.Bucket)
-	// placeUsecase := usecases.NewPlaceUsecase(placeStore)
+	mediaUsecase := usecases.NewMediaUsecase(mediaStore, fileManager, configuration.S3Config.URL, configuration.S3Config.UploadsPathPrefix, configuration.S3Config.Bucket)
+	videoUsecase := usecases.NewVideoUsecase(mediaUsecase, videoStore)
 	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator)
+
+	// rest handlers
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
 	mediaHandler := handlers.NewMediaHandler(mediaUsecase)
-	// placeHandler := handlers.NewPlaceHandler(placeUsecase)
+	videoHandler := handlers.NewVideoAnalysisHandler(videoUsecase)
 
 	router := mux.NewRouter()
 	router.Use(middleware.Authentication(authUsecase))
+	// connectivity test
 	router.Handle("/", userHandler.Ping()).Methods("GET")
-	router.Handle("/me", userHandler.Me()).Methods("GET")
-	router.Handle("/upload", mediaHandler.Upload()).Methods("PUT")
-	// router.Handle("/places", placeHandler.GetPlacesByViewport()).Methods("POST")
-	router.Handle("/login", userHandler.Login()).Methods("POST")
-	// router.Handle("/users", userHandler.GetUsersByUsernamePattern()).Methods("GET")
+
+	// users
 	router.Handle("/register", userHandler.CreateUser()).Methods("PUT")
+	router.Handle("/login", userHandler.Login()).Methods("POST")
+	router.Handle("/me", userHandler.Me()).Methods("GET")
+
+	// media
+	router.Handle("/upload", mediaHandler.Upload()).Methods("PUT")
+
+	// videos
+	router.Handle("/video", videoHandler.CreateVideoAnalysis()).Methods("PUT")
+	router.Handle("/video/{id}", videoHandler.GetVideoAnalysisByID()).Methods("GET")
 
 	specHandler, _, err := handlers.HandleSwaggerFile()
 	if err != nil {

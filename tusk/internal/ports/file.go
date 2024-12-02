@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"tusk/internal/domain"
+	"tusk/internal/util"
 
 	"go.uber.org/zap"
 )
@@ -17,6 +19,9 @@ type File interface {
 type FileManager interface {
 	DownloadFile(ctx context.Context, fileSrc string, localDir string) (File, error)
 	UploadFile(ctx context.Context, fileSrc string, dest string, contentType string) error
+	Delete(ctx context.Context, bucket string, key string) error
+	CopyS3URI(ctx context.Context, sourceURL, destURL util.S3URI) error
+	GetFileMetadata(ctx context.Context, url string) (*domain.FileMetadata, error)
 }
 
 type TempFile struct {

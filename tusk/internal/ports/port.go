@@ -14,6 +14,15 @@ type UserDatabaseStore interface {
 	// GetUsersByUsernamePattern(ctx context.Context, usernamePattern string) ([]domain.User, error)
 }
 
+type MediaDatabaseStore interface {
+	Create(ctx context.Context, file domain.MediaFile) (*domain.MediaFile, error)
+}
+
+type VideoDatabaseStore interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error)
+	Create(ctx context.Context, video domain.Video) error
+}
+
 type TokenGeneratorAuthInterface interface {
 	CreateUserJWT(ctx context.Context, usr domain.User) (string, error)
 	ValidateUserJWT(ctx context.Context, token string) (*uuid.UUID, error)
