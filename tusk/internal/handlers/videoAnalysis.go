@@ -70,6 +70,11 @@ func (vah *VideoAnalysisHandler) CreateVideoAnalysis() http.HandlerFunc {
 		defer r.Body.Close()
 
 		err = vah.videoUsecase.CreateNewVideo(ctx, mapVideoDTOToDomain(videoData))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		// Convert the result to JSON and write to the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNoContent)
