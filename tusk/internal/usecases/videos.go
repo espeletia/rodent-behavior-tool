@@ -6,19 +6,22 @@ import (
 	"tusk/internal/middleware"
 	"tusk/internal/ports"
 
+	commonDomain "ghiaccio/domain"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type VideoUsecase struct {
-	mediaUsecase       *MediaUsecase
-	videoDatabaseStore ports.VideoDatabaseStore
+	mediaUsecase         *MediaUsecase
+	videoDatabaseStore   ports.VideoDatabaseStore
+	videoAnalysisCreator ports.VideoAnalysisCreator
 }
 
-func NewVideoUsecase(media *MediaUsecase, videoDatabaseStore ports.VideoDatabaseStore) *VideoUsecase {
+func NewVideoUsecase(media *MediaUsecase, videoDatabaseStore ports.VideoDatabaseStore, videoAnalysisCreator ports.VideoAnalysisCreator) *VideoUsecase {
 	return &VideoUsecase{
-		mediaUsecase:       media,
-		videoDatabaseStore: videoDatabaseStore,
+		mediaUsecase:         media,
+		videoDatabaseStore:   videoDatabaseStore,
+		videoAnalysisCreator: videoAnalysisCreator,
 	}
 }
 
@@ -44,6 +47,14 @@ func (vu *VideoUsecase) CreateNewVideo(ctx context.Context, data domain.CreateVi
 	)
 	if err != nil {
 		zap.L().Error(err.Error())
+		return err
+	}
+
+	err = vu.videoAnalysisCreator.AddAnalystJob(ctx, commonDomain.AnalystJobMessage{
+		ID:  uuid.New(),
+		Url: videoMedia.Url,
+	})
+	if err != nil {
 		return err
 	}
 	return nil

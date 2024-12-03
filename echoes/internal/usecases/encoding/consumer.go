@@ -49,7 +49,7 @@ func (qw *QueueConsumer) ProcessVideoQueue(ctx context.Context, job commonDomain
 }
 
 func (qw *QueueConsumer) processVideoQueue(ctx context.Context, job domain.VideoEncodingJob) error {
-	zap.L().Info(fmt.Sprintf("Starting to handle video job #%v", job.ID), zap.Int64("ID", job.ID))
+	zap.L().Info(fmt.Sprintf("Starting to handle video job #%v", job.ID), zap.String("ID", job.ID.String()))
 
 	qw.logJobContents(ctx, job)
 
@@ -86,7 +86,7 @@ func (qw *QueueConsumer) processVideoQueue(ctx context.Context, job domain.Video
 
 func (qw *QueueConsumer) uploadFinishedFiles(ctx context.Context, files []domain.JobResult) error {
 	for _, file := range files {
-		err := qw.files.UploadFile(ctx, file.LocalFileSrc, fmt.Sprintf("S3:/test/videos/1/outputs/boxes_videoplayback/results_%d.mp4", file.ID), "video/mp4")
+		err := qw.files.UploadFile(ctx, file.LocalFileSrc, fmt.Sprintf("S3:/test/videos/1/outputs/boxes_videoplayback/results_%d.mp4", file.ID.String()), "video/mp4")
 		if err != nil {
 			return err
 		}

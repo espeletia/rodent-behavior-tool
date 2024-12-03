@@ -4,6 +4,7 @@ import (
 	"context"
 	"tusk/internal/domain"
 
+	commonDomain "ghiaccio/domain"
 	"github.com/google/uuid"
 )
 
@@ -26,4 +27,8 @@ type VideoDatabaseStore interface {
 type TokenGeneratorAuthInterface interface {
 	CreateUserJWT(ctx context.Context, usr domain.User) (string, error)
 	ValidateUserJWT(ctx context.Context, token string) (*uuid.UUID, error)
+}
+
+type VideoAnalysisCreator interface {
+	AddAnalystJob(ctx context.Context, job commonDomain.AnalystJobMessage) error
 }
