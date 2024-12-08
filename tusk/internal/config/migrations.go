@@ -5,17 +5,23 @@ import (
 )
 
 type MigrationsConfig struct {
-	MigrationPath string
+	MigrationPath     string
+	RunNatsMigrations bool
 }
 
 func loadMigrationsConfig() MigrationsConfig {
 	migrationsConfig := &MigrationsConfig{}
-	u := configViper("migrations")
-	err := u.ReadInConfig()
+	v := configViper("migrations")
+	err := v.BindEnv("RunNatsMigrations", "RUN_NATS_MIGRATIONS")
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
-	err = u.Unmarshal(migrationsConfig)
+
+	err = v.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
+	err = v.Unmarshal(migrationsConfig)
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}

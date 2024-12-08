@@ -14,9 +14,11 @@ func RunMigrations() error {
 	if err != nil {
 		return err
 	}
-	err = RunNatsMigrations(configuration)
-	if err != nil {
-		return err
+	if configuration.MigrationsConfig.RunNatsMigrations {
+		err = RunNatsMigrations(configuration)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

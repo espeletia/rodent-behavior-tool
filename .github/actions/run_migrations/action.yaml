@@ -29,7 +29,7 @@ inputs:
   natsUrl:
     description: nats url
     required: false
-    default: 'nats://172.0.0.1:4222'
+    default: 'nats://172.17.0.1:4222'
 
 
 runs:
@@ -60,6 +60,7 @@ runs:
         --env DATABASE_USERNAME="${{ inputs.databaseUsername }}"
         --env DATABASE_PASSWORD="${{ inputs.databasePassword }}"
         --env NATS_URL="${{ inputs.natsUrl }}"
+        --env RUN_NATS_MIGRATIONS="false"
         migrations:latest
 
 
