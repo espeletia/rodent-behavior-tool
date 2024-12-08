@@ -3,16 +3,18 @@ package ports
 import (
 	"context"
 	"fmt"
+	commonDomain "ghiaccio/domain"
 	"io"
 	"io/ioutil"
 	"os"
 
-	"echoes/internal/domain"
+	"echoes/internal/util"
+
 	"go.uber.org/zap"
 )
 
 type Queue interface {
-	HandleVideoJob(ctx context.Context, handler func(ctx context.Context, job domain.VideoEncodingJob) error, errChan chan error) error
+	AddEncodingJobResult(ctx context.Context, job commonDomain.VideoEncodingResultMessage) error
 }
 
 type File interface {
@@ -21,8 +23,8 @@ type File interface {
 }
 
 type FileManager interface {
-	DownloadFile(ctx context.Context, fileSrc string, localDir string) (File, error)
-	UploadFile(ctx context.Context, fileSrc string, dest string, contentType string) error
+	DownloadFile(ctx context.Context, src util.S3URI, dir string) (File, error)
+	UploadFile(ctx context.Context, fileSrc string, dest util.S3URI, contentType string) error
 }
 
 type TempFile struct {

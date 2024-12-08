@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 
 	"echoes/internal/domain"
 	"echoes/internal/ports"
 	"echoes/internal/usecases/encoding/video"
+	"echoes/internal/util"
 	commonDomain "ghiaccio/domain"
 
 	"go.uber.org/zap"
@@ -16,29 +18,38 @@ import (
 
 type QueueConsumer struct {
 	files        ports.FileManager
+	queueHandler ports.Queue
 	videoEncoder *video.VideoMediaEncoder
 	tempDir      string
-	// statusProducerUsecases *job.StatusProducerUsecases
+
+	s3Url  string
+	bucket string
 }
 
 func NewQueueConsumer(
 	files ports.FileManager,
 	videoEncoder *video.VideoMediaEncoder,
 	tempDir string,
-	// statusProducerUsecases *job.StatusProducerUsecases,
+	s3Url string,
+	bucket string,
+	queueHandler ports.Queue,
 ) *QueueConsumer {
 	return &QueueConsumer{
 		files:        files,
 		videoEncoder: videoEncoder,
 		tempDir:      tempDir,
-		// statusProducerUsecases: statusProducerUsecases,
+		s3Url:        s3Url,
+		bucket:       bucket,
+		queueHandler: queueHandler,
 	}
 }
 
 func (qw *QueueConsumer) ProcessVideoQueue(ctx context.Context, job commonDomain.VideoEncodingMessage) error {
 	videoJob := domain.VideoEncodingJob{
-		ID:  job.ID,
-		URl: job.Url,
+		ID:      job.ID,
+		VideoID: job.VideoID,
+		MediaID: job.MediaID,
+		URl:     job.Url,
 	}
 	err := qw.processVideoQueue(ctx, videoJob)
 	if err != nil {
@@ -59,7 +70,12 @@ func (qw *QueueConsumer) processVideoQueue(ctx context.Context, job domain.Video
 	}
 	defer os.RemoveAll(dir)
 
-	file, err := qw.files.DownloadFile(ctx, job.URl, dir)
+	parsedUrl, err := util.ParseString(job.URl)
+	if err != nil {
+		return err
+	}
+
+	file, err := qw.files.DownloadFile(ctx, *parsedUrl, dir)
 	if err != nil {
 		return err
 	}
@@ -76,7 +92,20 @@ func (qw *QueueConsumer) processVideoQueue(ctx context.Context, job domain.Video
 		FileDestinationSrc: job.URl,
 	})
 
-	err = qw.uploadFinishedFiles(ctx, filesToUpload)
+	zap.L().Debug(fmt.Sprintf("uploading video file", file.Path()))
+
+	urls, err := qw.uploadFinishedFiles(ctx, filesToUpload)
+	if err != nil {
+		return err
+	}
+
+	zap.L().Debug("Sending result message")
+	err = qw.queueHandler.AddEncodingJobResult(ctx, commonDomain.VideoEncodingResultMessage{
+		ID:      job.ID,
+		VideoID: job.VideoID,
+		MediaID: job.MediaID,
+		Url:     urls[0],
+	})
 	if err != nil {
 		return err
 	}
@@ -84,14 +113,25 @@ func (qw *QueueConsumer) processVideoQueue(ctx context.Context, job domain.Video
 	return nil
 }
 
-func (qw *QueueConsumer) uploadFinishedFiles(ctx context.Context, files []domain.JobResult) error {
+func (qw *QueueConsumer) uploadFinishedFiles(ctx context.Context, files []domain.JobResult) ([]string, error) {
+	urls := []string{}
 	for _, file := range files {
-		err := qw.files.UploadFile(ctx, file.LocalFileSrc, fmt.Sprintf("S3:/test/videos/1/outputs/boxes_videoplayback/results_%d.mp4", file.ID.String()), "video/mp4")
+		parsedUrl, err := url.ParseRequestURI(file.FileDestinationSrc)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		url := fmt.Sprintf("%s/%s/%s%s", qw.s3Url, qw.bucket, "encoding_results", parsedUrl.Path)
+		uploadUrl, err := util.ParseString(url)
+		if err != nil {
+			return nil, err
+		}
+		err = qw.files.UploadFile(ctx, file.LocalFileSrc, *uploadUrl, "video/mp4")
+		if err != nil {
+			return nil, err
+		}
+		urls = append(urls, url)
 	}
-	return nil
+	return urls, nil
 }
 
 func (qw *QueueConsumer) logJobContents(ctx context.Context, job domain.VideoEncodingJob) {
@@ -100,7 +140,7 @@ func (qw *QueueConsumer) logJobContents(ctx context.Context, job domain.VideoEnc
 }
 
 func (qw *QueueConsumer) createTemDir(job domain.VideoEncodingJob) (string, error) {
-	dir, err := os.MkdirTemp(qw.tempDir, fmt.Sprintf("%d_*", job.ID))
+	dir, err := os.MkdirTemp(qw.tempDir, fmt.Sprintf("%s_*", job.ID.String()))
 	if err != nil {
 		return "", err
 	}

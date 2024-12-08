@@ -3,8 +3,10 @@ package domain
 import "github.com/google/uuid"
 
 type VideoEncodingJob struct {
-	ID  uuid.UUID
-	URl string
+	ID      uuid.UUID
+	VideoID uuid.UUID
+	MediaID uuid.UUID
+	URl     string
 }
 
 type JobResult struct {

@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"tusk/internal/config"
@@ -22,6 +23,7 @@ import (
 
 type TuskServiceComponents struct {
 	httpServer goNextService.Component
+	queue      goNextService.Component
 	cleanup    goNextService.Component
 }
 
@@ -127,10 +129,28 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	httpComponent := components.NewHttpComponent(handler, components.WithHttpServer(&api))
 	var lifecycleRun components.LifeCycleFunc
 
+	queueComponent := components.NewQueueComponent([]components.QueueHandler{
+		func(c chan error) error {
+			return natsqueue.HandleAnalystJobResult(context.Background(), videoUsecase.ProcessAnalystJobResultQueue, c)
+		},
+		func(c chan error) error {
+			return natsqueue.HandleEncodingJobResult(context.Background(), videoUsecase.ProcessEncodingJobResultQueue, c)
+		},
+	},
+		components.WithQueueClose(func(ctx context.Context) error {
+			err := natsqueue.Close(ctx)
+			if err != nil {
+				return err
+			}
+			return nil
+		}),
+	)
+
 	return &TuskServiceComponents{
 		httpServer: httpComponent,
 		cleanup: components.NewLifecycleComponent([]components.LifeCycleFunc{},
 			lifecycleRun, nil),
+		queue: queueComponent,
 	}, nil
 
 }

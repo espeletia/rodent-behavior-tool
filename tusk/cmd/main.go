@@ -10,8 +10,22 @@ import (
 )
 
 func main() {
-	if err := runner.Serve(); err != nil {
-		log.Println("Error: ", err)
-		os.Exit(1)
+	services := os.Args[1:]
+	if len(services) == 0 {
+		services = []string{
+			os.Getenv("TUSK_MODE"),
+		}
+	}
+
+	if services[0] == "queue" {
+		if err := runner.StartQueue(); err != nil {
+			log.Println("Error: ", err)
+			os.Exit(1)
+		}
+	} else {
+		if err := runner.Serve(); err != nil {
+			log.Println("Error: ", err)
+			os.Exit(1)
+		}
 	}
 }

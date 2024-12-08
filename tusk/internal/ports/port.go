@@ -22,6 +22,7 @@ type MediaDatabaseStore interface {
 type VideoDatabaseStore interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error)
 	Create(ctx context.Context, video domain.Video) error
+	AddAnalyzedVideo(ctx context.Context, videoID, mediaId uuid.UUID) error
 }
 
 type TokenGeneratorAuthInterface interface {
@@ -29,6 +30,7 @@ type TokenGeneratorAuthInterface interface {
 	ValidateUserJWT(ctx context.Context, token string) (*uuid.UUID, error)
 }
 
-type VideoAnalysisCreator interface {
+type QueueHandler interface {
 	AddAnalystJob(ctx context.Context, job commonDomain.AnalystJobMessage) error
+	AddEncoderJob(ctx context.Context, job commonDomain.VideoEncodingMessage) error
 }

@@ -16,8 +16,9 @@ type NatsConfig struct {
 	MaxAge         time.Duration
 	MaxAckPending  int
 
-	JobVideoConsumer string
-	JobVideoSubject  string
+	JobVideoConsumer        string
+	JobVideoSubject         string
+	JobEncoderResultSubject string
 
 	Streams StreamsConfig
 }

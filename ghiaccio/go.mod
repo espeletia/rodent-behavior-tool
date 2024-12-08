@@ -4,6 +4,7 @@ go 1.23.1
 
 require (
 	github.com/go-jose/go-jose/v3 v3.0.3
+	github.com/google/uuid v1.4.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/nats.go v1.37.0
 	github.com/spf13/viper v1.19.0

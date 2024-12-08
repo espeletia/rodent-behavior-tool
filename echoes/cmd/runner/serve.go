@@ -22,10 +22,7 @@ import (
 )
 
 type EchoesServerComponents struct {
-	httpServer goNextService.Component
-	cron       goNextService.Component
-	queue      goNextService.Component
-	cleanup    goNextService.Component
+	queue goNextService.Component
 }
 
 func Serve() error {
@@ -59,7 +56,7 @@ func setupService(configuration *config.Config) (*EchoesServerComponents, error)
 
 	fileManager := filemanager.NewS3FileManager(s3client)
 	mp4Encoder := video.NewVideoMediaEncoder(configuration.EncodingConfig.FfmpegPath, configuration.EncodingConfig.FfprobePath)
-	worker := encoding.NewQueueConsumer(fileManager, mp4Encoder, "")
+	worker := encoding.NewQueueConsumer(fileManager, mp4Encoder, "", configuration.S3Config.URL, configuration.S3Config.Bucket, queue)
 	queueComponent := components.NewQueueComponent([]components.QueueHandler{
 		func(c chan error) error {
 			return queue.HandleVideoJob(context.Background(), worker.ProcessVideoQueue, c)
