@@ -5,6 +5,7 @@ from natsqueue.client import NatsClient
 from utils.logger import log_error, log_message
 from utils.gracefulTermination import GracefulTermination
 from detection.detection import Detection
+from urllib.parse import urlparse
 
 
 class AnalystWorker:
@@ -23,25 +24,25 @@ class AnalystWorker:
                 log_message(msgs)
                 for msg in msgs:
                     parsed_msg = json.loads(msg.data)
-                    job_id = parsed_msg["job_id"]
-                    url = parsed_msg["url"]
+                    job_id = parsed_msg["Message"]["job_id"]
+                    video_id = parsed_msg["Message"]["video_id"]
+                    media_id = parsed_msg["Message"]["media_id"]
+                    url = parsed_msg["Message"]["url"]
                     bucket, key = parse_s3_url(url)
                     results, center_points = self.detector.S3VideoDetection(
                         key)
-                    encoding_job_message = {
+                    analyst_job_result_message = {
                         "Message": {
-                            "id": job_id,
-                            "url": f"S3://{bucket}/{results}",
+                            "job_id": job_id,
+                            "video_id": video_id,
+                            "media_id": media_id,
+                            # TODO: Make it fully configurable
+                            "url": f"http://minio:9000/{bucket}/{results}",
                         },
                         "Err": None,
                     }
 
-                    await nats_client.publish_video_encoding_job(encoding_job_message)
-                    response_object = {
-                        "job_id": job_id,
-                        "results": results,
-                    }
-                    await nats_client.publish_analyst_result(response_object)
+                    await nats_client.publish_analyst_result(analyst_job_result_message)
                     await msg.ack()
             except Exception as err:
                 if str(err) != "nats: timeout":
@@ -51,11 +52,14 @@ class AnalystWorker:
 
 
 def parse_s3_url(s3_url):
-    # Remove the "s3://" prefix
-    stripped_url = s3_url.replace("s3://", "")
+    # Parse the URL using urlparse
+    parsed_url = urlparse(s3_url)
 
-    # Split into bucket and key
-    parts = stripped_url.split('/', 1)
+    # The path part of the URL starts with '/', so we strip it
+    stripped_path = parsed_url.path.lstrip('/')
+
+    # Split the path into bucket and key
+    parts = stripped_path.split('/', 1)
 
     # parts[0] is the bucket name, parts[1] is the key
     bucket = parts[0]

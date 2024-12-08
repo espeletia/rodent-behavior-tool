@@ -3,12 +3,11 @@ package filemanager
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"echoes/internal/ports"
+	"echoes/internal/util"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"go.uber.org/zap"
@@ -28,16 +27,12 @@ func NewS3FileManager(s3client *s3.Client) *S3FileManager {
 	}
 }
 
-func (hfm *S3FileManager) DownloadFile(ctx context.Context, src string, dir string) (ports.File, error) {
-	u, err := url.Parse(src)
-	if err != nil {
-		return nil, err
-	}
-	zap.L().Info("fetching file", zap.String("host", u.Host), zap.String("key", u.Path))
+func (hfm *S3FileManager) DownloadFile(ctx context.Context, src util.S3URI, dir string) (ports.File, error) {
+	zap.L().Info("fetching file", zap.String("bucket", *src.Bucket), zap.String("key", *src.Key))
 
 	obj, err := hfm.s3client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(u.Host),
-		Key:    aws.String(u.Path),
+		Bucket: aws.String(*src.Bucket),
+		Key:    aws.String(*src.Key),
 	})
 	if err != nil {
 		return nil, err
@@ -50,22 +45,16 @@ func (hfm *S3FileManager) DownloadFile(ctx context.Context, src string, dir stri
 	return tempFile, nil
 }
 
-func (hfm *S3FileManager) UploadFile(ctx context.Context, fileSrc string, dest string, contentType string) error {
-	u, err := url.Parse(dest)
-	if err != nil {
-		return err
-	}
-
+func (hfm *S3FileManager) UploadFile(ctx context.Context, fileSrc string, dest util.S3URI, contentType string) error {
 	data, err := os.Open(filepath.Clean(fileSrc))
 	if err != nil {
 		return err
 	}
-	key := strings.TrimPrefix(u.Path, "/")
-	zap.L().Info("uploading file", zap.String("host", u.Host), zap.String("key", key))
+	zap.L().Info("uploading file", zap.String("host", *dest.Bucket), zap.String("key", *dest.Key))
 	uploader := manager.NewUploader(hfm.s3client)
 	result, err := uploader.Upload(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(u.Host),
-		Key:         aws.String(key),
+		Bucket:      aws.String(*dest.Bucket),
+		Key:         aws.String(*dest.Key),
 		Body:        data,
 		ContentType: &contentType,
 		ACL:         types.ObjectCannedACLPublicRead,

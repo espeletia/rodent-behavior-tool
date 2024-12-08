@@ -16,3 +16,17 @@ type CreateVideoDto struct {
 	Description *string
 	Name        string
 }
+
+type AnalystResult struct {
+	ID      uuid.UUID
+	VideoID uuid.UUID
+	MediaID uuid.UUID
+	Url     string
+}
+
+type EncodingResult struct {
+	ID      uuid.UUID
+	VideoID uuid.UUID
+	MediaID uuid.UUID
+	Url     string
+}

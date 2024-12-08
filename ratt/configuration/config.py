@@ -19,7 +19,7 @@ NATS_BATCH_SIZE = os.environ.get("NATS_BATCH_SIZE", 1)
 NATS_ANALYSIS_GROUP = os.environ.get("NATS_JOB_GROUP", "analystWorker")
 NATS_ANALYSIS_SUBJECT = os.environ.get("NATS_JOB_SUBJECT", "analystJob")
 NATS_ANALYSIS_RESULT_SUBJECT = os.environ.get(
-    "NATS_JOB_RESULT_SUBJECT", "analystJobFinished")
+    "NATS_JOB_RESULT_SUBJECT", "ANALYST.analystJobFinished")
 
 NATS_ENCODER_STREAM = os.environ.get("NATS_ENCODER_STREAM", "ENCODER")
 NATS_ENCODER_VIDEO_JOB_SUBJECT = os.environ.get(

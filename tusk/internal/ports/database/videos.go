@@ -56,6 +56,30 @@ func (vdbs *VideoDatabaseStore) Create(ctx context.Context, video domain.Video) 
 	return nil
 }
 
+func (vdbs *VideoDatabaseStore) AddAnalyzedVideo(ctx context.Context, videoID, mediaId uuid.UUID) error {
+	updateModel := model.VideoAnalysis{
+		AnalysedVideo: &mediaId,
+	}
+
+	updateStmt := table.VideoAnalysis.UPDATE(table.VideoAnalysis.AnalysedVideo).
+		MODEL(updateModel).
+		WHERE(table.VideoAnalysis.ID.EQ(postgres.UUID(videoID)))
+
+	r, err := updateStmt.ExecContext(ctx, vdbs.DB)
+	if err != nil {
+		return err
+	}
+	rows, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows != 1 {
+		return errors.New("failed to add analysed video")
+	}
+
+	return nil
+}
+
 func (vdbs *VideoDatabaseStore) GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error) {
 	selectStmt := table.VideoAnalysis.SELECT(
 		table.VideoAnalysis.AllColumns,

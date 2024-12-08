@@ -39,4 +39,3 @@ spec:
           #     path: /healthcheck
           #     port: 8081
       terminationGracePeriodSeconds: 300
-

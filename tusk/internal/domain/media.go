@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	MediaVariantOriginal string = "original"
+	MediaVariantOriginal     string = "original"
+	MediaVariantAnalysedRaw  string = "analysed_raw"
+	MediaVariantAnalysedX264 string = "analysed_x264"
 )
 
 type FileMetadata struct {

@@ -11,7 +11,6 @@ import (
 	"echoes/internal/usecases/encoding/video"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	// "echoes/internal/usecases/encoding/video"
 	// "fmt"
@@ -23,10 +22,7 @@ import (
 )
 
 type EchoesServerComponents struct {
-	httpServer goNextService.Component
-	cron       goNextService.Component
-	queue      goNextService.Component
-	cleanup    goNextService.Component
+	queue goNextService.Component
 }
 
 func Serve() error {
@@ -60,7 +56,7 @@ func setupService(configuration *config.Config) (*EchoesServerComponents, error)
 
 	fileManager := filemanager.NewS3FileManager(s3client)
 	mp4Encoder := video.NewVideoMediaEncoder(configuration.EncodingConfig.FfmpegPath, configuration.EncodingConfig.FfprobePath)
-	worker := encoding.NewQueueConsumer(fileManager, mp4Encoder, "")
+	worker := encoding.NewQueueConsumer(fileManager, mp4Encoder, "", configuration.S3Config.URL, configuration.S3Config.Bucket, queue)
 	queueComponent := components.NewQueueComponent([]components.QueueHandler{
 		func(c chan error) error {
 			return queue.HandleVideoJob(context.Background(), worker.ProcessVideoQueue, c)
@@ -77,32 +73,4 @@ func setupService(configuration *config.Config) (*EchoesServerComponents, error)
 	return &EchoesServerComponents{
 		queue: queueComponent,
 	}, nil
-	// queueComponent := goNextService.NewQueueComponent([]application.QueueHandler{
-	// 	func(c chan error) error {
-	// 		return queue.HandleStoryJob(context.Background(), jobUsecase.ProcessStoryRenderJob, c)
-	// 	},
-	// 	func(c chan error) error {
-	// 		return queue.HandleMomentJob(context.Background(), jobUsecase.ProcessMomentRenderJob, c)
-	// 	},
-	// 	func(c chan error) error {
-	// 		return queue.HandleTripShareImageJob(context.Background(), jobUsecase.ProcessTripShareImageRenderJob, c)
-	// 	},
-	// }, application.WithQueueClose(func(ctx context.Context) error {
-	// 	err = queue.Close(ctx)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	return nil
-	// }))
-
-	// videoEncoder := video.NewVideoMediaEncoder(configuration.EncodingConfig.FfmpegPath, configuration.EncodingConfig.FfprobePath)
-	// output, err := videoEncoder.EncodeVideoWith256(context.Background(), "/app/videos/videos_1_outputs_boxes_videoplayback.mp4")
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(output)
-	for {
-		logger.Info("Waiting")
-		time.Sleep(30 * time.Second)
-	}
 }

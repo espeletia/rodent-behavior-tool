@@ -1,12 +1,16 @@
 package domain
 
+import "github.com/google/uuid"
+
 type VideoEncodingJob struct {
-	ID  int64
-	URl string
+	ID      uuid.UUID
+	VideoID uuid.UUID
+	MediaID uuid.UUID
+	URl     string
 }
 
 type JobResult struct {
-	ID                 int64
+	ID                 uuid.UUID
 	Label              string
 	LocalFileSrc       string
 	FileDestinationSrc string

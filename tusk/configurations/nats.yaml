@@ -1,8 +1,12 @@
 Host: nats://nats:4222
 
 JobVideoConsumer: videoWorker
-JobVideoSubject: mediaVideoJobs
+JobEncoderSubject: mediaVideoJobs
+JobEncoderResultSubject: encoderResults
 
+JobAnalystResultConsumer: analystResult
+JobAnalystResultSubject: analystJobFinished
+JobAnalystSubject: analystJob
 
 Streams:
   Encoder:
@@ -19,4 +23,25 @@ Streams:
         AckWait: 5m
         AckPending: 1000
         Subject: mediaVideoJobs
-
+      - Name: encoderResultWorker
+        AckWait: 5m
+        AckPending: 1000
+        Subject: encoderResults
+  Analyst:
+    Name: ANALYST
+    Subjects:
+      - ANALYST.*
+    MaxMsg: 300000
+    MaxRetry: 2
+    MaxAge: 240h
+    AckWait: 5m
+    DuplicateWindow: 2m
+    Consumers:
+      - Name: analystWorker
+        AckWait: 5m
+        AckPending: 1000
+        Subject: analystJob
+      - Name: analystResult
+        AckWait: 5m
+        AckPending: 1000
+        Subject: analystJobFinished

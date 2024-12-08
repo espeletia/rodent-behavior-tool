@@ -155,4 +155,5 @@ docker_build_with_restart('ratt',
 k8s_resource('ratt', port_forwards=["0.0.0.0:8083:8081"], labels=["AI"], resource_deps=['nats','minio'])
 k8s_resource('echoes', labels=["ENCODING"], resource_deps=['nats', 'minio'])
 k8s_resource('tusk', labels=["BE"], port_forwards=["0.0.0.0:8081:8080"], resource_deps=['nats', 'minio'])
+k8s_resource('tusk-queue', labels=["BE"], resource_deps=['nats', 'minio', 'tusk'])
 

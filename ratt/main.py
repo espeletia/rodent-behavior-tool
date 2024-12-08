@@ -39,9 +39,11 @@ def main():
 
     run_analysis_worker()
 
+    logger.log_message("starting RATT service!")
     api = Process(target=run_api, name="api", daemon=True)
     running_processes.append(api)
     api.start()
+
     while True:
         for process in running_processes:
             if process.exitcode is not None:

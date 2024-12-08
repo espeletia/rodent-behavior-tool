@@ -2,7 +2,7 @@ Host: nats://nats:4222
 
 JobVideoConsumer: videoWorker
 JobVideoSubject: mediaVideoJobs
-
+JobEncoderResultSubject: encoderResults
 
 Streams:
   Encoder:

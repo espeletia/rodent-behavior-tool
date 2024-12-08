@@ -4,6 +4,7 @@ import (
 	"context"
 	"tusk/internal/domain"
 
+	commonDomain "ghiaccio/domain"
 	"github.com/google/uuid"
 )
 
@@ -21,9 +22,15 @@ type MediaDatabaseStore interface {
 type VideoDatabaseStore interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error)
 	Create(ctx context.Context, video domain.Video) error
+	AddAnalyzedVideo(ctx context.Context, videoID, mediaId uuid.UUID) error
 }
 
 type TokenGeneratorAuthInterface interface {
 	CreateUserJWT(ctx context.Context, usr domain.User) (string, error)
 	ValidateUserJWT(ctx context.Context, token string) (*uuid.UUID, error)
+}
+
+type QueueHandler interface {
+	AddAnalystJob(ctx context.Context, job commonDomain.AnalystJobMessage) error
+	AddEncoderJob(ctx context.Context, job commonDomain.VideoEncodingMessage) error
 }

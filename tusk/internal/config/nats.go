@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"ghiaccio/config"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
@@ -16,8 +17,11 @@ type NatsConfig struct {
 	MaxAge         time.Duration
 	MaxAckPending  int
 
-	JobVideoConsumer        string
-	JobVideoSubject         string
+	JobAnalystResultConsumer string
+	JobAnalystSubject        string
+	JobAnalystResultSubject  string
+
+	JobEncoderSubject       string
 	JobEncoderResultSubject string
 
 	Streams StreamsConfig
@@ -25,22 +29,23 @@ type NatsConfig struct {
 
 type StreamsConfig struct {
 	Encoder config.StreamConfig
+	Analyst config.StreamConfig
 }
 
 func loadNatsConfig() NatsConfig {
 	natsConfig := &NatsConfig{}
 	v := configViper("nats")
-	err := v.BindEnv("Host", "NATS_URL", "DEMETER_NATS_URL")
+	err := v.BindEnv("Host", "NATS_URL")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 	err = v.BindEnv("StreamName", "NATS_STREAM_NAME")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 	err = v.ReadInConfig()
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 	err = v.Unmarshal(&natsConfig, viper.DecodeHook(
 		mapstructure.ComposeDecodeHookFunc(
@@ -49,7 +54,7 @@ func loadNatsConfig() NatsConfig {
 		),
 	))
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 	return *natsConfig
 }

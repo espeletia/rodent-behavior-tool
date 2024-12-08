@@ -13,6 +13,7 @@ type Config struct {
 	MigrationsConfig MigrationsConfig
 	HashConfig       HashConfig
 	JWTConfig        JWTConfig
+	NatsConfig       NatsConfig
 }
 
 func LoadConfig() *Config {
@@ -24,6 +25,7 @@ func LoadConfig() *Config {
 		MigrationsConfig: loadMigrationsConfig(),
 		HashConfig:       loadHashConfig(),
 		JWTConfig:        loadJWTConfig(),
+		NatsConfig:       loadNatsConfig(),
 	}
 }
 

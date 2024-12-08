@@ -6,6 +6,7 @@ import (
 	"tusk/internal/middleware"
 	"tusk/internal/ports"
 
+	commonDomain "ghiaccio/domain"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -13,12 +14,14 @@ import (
 type VideoUsecase struct {
 	mediaUsecase       *MediaUsecase
 	videoDatabaseStore ports.VideoDatabaseStore
+	queueHandler       ports.QueueHandler
 }
 
-func NewVideoUsecase(media *MediaUsecase, videoDatabaseStore ports.VideoDatabaseStore) *VideoUsecase {
+func NewVideoUsecase(media *MediaUsecase, videoDatabaseStore ports.VideoDatabaseStore, queueHandler ports.QueueHandler) *VideoUsecase {
 	return &VideoUsecase{
 		mediaUsecase:       media,
 		videoDatabaseStore: videoDatabaseStore,
+		queueHandler:       queueHandler,
 	}
 }
 
@@ -46,6 +49,16 @@ func (vu *VideoUsecase) CreateNewVideo(ctx context.Context, data domain.CreateVi
 		zap.L().Error(err.Error())
 		return err
 	}
+
+	err = vu.queueHandler.AddAnalystJob(ctx, commonDomain.AnalystJobMessage{
+		ID:      uuid.New(),
+		VideoID: videoId,
+		Url:     videoMedia.Url,
+		MediaID: videoMedia.ID,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 
 }
@@ -56,4 +69,70 @@ func (vu *VideoUsecase) GetByID(ctx context.Context, id uuid.UUID) (*domain.Vide
 		return nil, domain.Unauthorized
 	}
 	return vu.videoDatabaseStore.GetByID(ctx, id)
+}
+
+// maybe rewrite this into a queue consumer and separate from usecase?
+func (vu *VideoUsecase) ProcessAnalystJobResultQueue(ctx context.Context, job commonDomain.AnalystJobResultMessage) error {
+	result := domain.AnalystResult{
+		ID:      job.ID,
+		VideoID: job.VideoID,
+		MediaID: job.MediaID,
+		Url:     job.Url,
+	}
+	err := vu.processAnalystJobResultQueue(ctx, result)
+	if err != nil {
+		zap.L().Error("Error from video analysis usecase", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (vu *VideoUsecase) ProcessEncodingJobResultQueue(ctx context.Context, job commonDomain.VideoEncodingResultMessage) error {
+	result := domain.EncodingResult{
+		ID:      job.ID,
+		VideoID: job.VideoID,
+		MediaID: job.MediaID,
+		Url:     job.Url,
+	}
+	err := vu.processEncodingResult(ctx, result)
+	if err != nil {
+		zap.L().Error("Error from video analysis usecase", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (vu *VideoUsecase) processEncodingResult(ctx context.Context, job domain.EncodingResult) error {
+	mediaFile, err := vu.mediaUsecase.ProcessFile(ctx, job.Url, "video", job.VideoID.String(), domain.MediaVariantAnalysedX264, &job.MediaID)
+	if err != nil {
+		return err
+	}
+
+	err = vu.videoDatabaseStore.AddAnalyzedVideo(ctx, job.VideoID, mediaFile.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (vu *VideoUsecase) processAnalystJobResultQueue(ctx context.Context, jobResult domain.AnalystResult) error {
+	mediaFile, err := vu.mediaUsecase.ProcessFile(ctx, jobResult.Url, "video", jobResult.VideoID.String(), domain.MediaVariantAnalysedRaw, &jobResult.MediaID)
+	if err != nil {
+		return err
+	}
+
+	err = vu.queueHandler.AddEncoderJob(ctx, commonDomain.VideoEncodingMessage{
+		ID:      uuid.New(),
+		VideoID: jobResult.VideoID,
+		MediaID: jobResult.MediaID,
+		Url:     mediaFile.Url,
+	})
+	if err != nil {
+		return err
+	}
+
+	zap.L().Info("sending videoEncoding message", zap.String("videoID", jobResult.VideoID.String()))
+
+	return nil
 }

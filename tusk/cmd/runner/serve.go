@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"tusk/internal/config"
@@ -8,6 +9,7 @@ import (
 	"tusk/internal/middleware"
 	"tusk/internal/ports/database"
 	"tusk/internal/ports/filemanager"
+	"tusk/internal/ports/natsqueue"
 	"tusk/internal/ports/tokens"
 	"tusk/internal/setup"
 	"tusk/internal/usecases"
@@ -21,6 +23,7 @@ import (
 
 type TuskServiceComponents struct {
 	httpServer goNextService.Component
+	queue      goNextService.Component
 	cleanup    goNextService.Component
 }
 
@@ -63,6 +66,12 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	// s3 file management port
 	fileManager := filemanager.NewS3FileManager(s3client)
 
+	// natsqueue port
+	natsqueue, err := natsqueue.NewNatsQueue(configuration.NatsConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	// database ports
 	userStore := database.NewUserDatabaseStore(dbconn)
 	mediaStore := database.NewMediaDatabaseStore(dbconn)
@@ -71,7 +80,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	// usecases
 	userUsecase := usecases.NewUserUsecase(userStore)
 	mediaUsecase := usecases.NewMediaUsecase(mediaStore, fileManager, configuration.S3Config.URL, configuration.S3Config.UploadsPathPrefix, configuration.S3Config.Bucket)
-	videoUsecase := usecases.NewVideoUsecase(mediaUsecase, videoStore)
+	videoUsecase := usecases.NewVideoUsecase(mediaUsecase, videoStore, natsqueue)
 	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator)
 
 	// rest handlers
@@ -120,10 +129,28 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	httpComponent := components.NewHttpComponent(handler, components.WithHttpServer(&api))
 	var lifecycleRun components.LifeCycleFunc
 
+	queueComponent := components.NewQueueComponent([]components.QueueHandler{
+		func(c chan error) error {
+			return natsqueue.HandleAnalystJobResult(context.Background(), videoUsecase.ProcessAnalystJobResultQueue, c)
+		},
+		func(c chan error) error {
+			return natsqueue.HandleEncodingJobResult(context.Background(), videoUsecase.ProcessEncodingJobResultQueue, c)
+		},
+	},
+		components.WithQueueClose(func(ctx context.Context) error {
+			err := natsqueue.Close(ctx)
+			if err != nil {
+				return err
+			}
+			return nil
+		}),
+	)
+
 	return &TuskServiceComponents{
 		httpServer: httpComponent,
 		cleanup: components.NewLifecycleComponent([]components.LifeCycleFunc{},
 			lifecycleRun, nil),
+		queue: queueComponent,
 	}, nil
 
 }
