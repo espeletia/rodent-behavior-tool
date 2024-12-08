@@ -36,6 +36,10 @@ jobs:
       matrix:
         tf: ${{ fromJSON(needs.matrix.outputs.changes)}}
     services:
+      nats:
+        image: docker.io/nats:latest
+        ports:
+          - 4222:4222
       postgres:
         image: postgres:17
         env:

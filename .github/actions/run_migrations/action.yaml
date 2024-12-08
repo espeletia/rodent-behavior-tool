@@ -25,7 +25,12 @@ inputs:
   databasePassword:
     description: db psw
     required: false
-    default: 'postgres'
+    default: 'postgres'  
+  natsUrl:
+    description: nats url
+    required: false
+    default: 'nats://172.17.0.1:4222'
+
 
 runs:
   using: composite
@@ -54,6 +59,7 @@ runs:
         --env DATABASE_URL="${{ inputs.databaseUrl }}"
         --env DATABASE_USERNAME="${{ inputs.databaseUsername }}"
         --env DATABASE_PASSWORD="${{ inputs.databasePassword }}"
+        --env NATS_URL="${{ inputs.natsUrl }}"
         migrations:latest
 
 
