@@ -56,30 +56,26 @@ var CreateVideoOp = openapi3Struct.Path{
 	},
 }
 
-func (vah *VideoAnalysisHandler) CreateVideoAnalysis() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		// Decode the JSON body to the `Viewport` struct
-		var videoData models.CreateVideoDto
-		err := json.NewDecoder(r.Body).Decode(&videoData)
-		if err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		defer r.Body.Close()
-
-		err = vah.videoUsecase.CreateNewVideo(ctx, mapVideoDTOToDomain(videoData))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		// Convert the result to JSON and write to the response
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNoContent)
-
+func (vah *VideoAnalysisHandler) CreateVideoAnalysis(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	// Decode the JSON body to the `Viewport` struct
+	var videoData models.CreateVideoDto
+	err := json.NewDecoder(r.Body).Decode(&videoData)
+	if err != nil {
+		return err
 	}
+
+	defer r.Body.Close()
+
+	err = vah.videoUsecase.CreateNewVideo(ctx, mapVideoDTOToDomain(videoData))
+	if err != nil {
+		return err
+	}
+
+	// Convert the result to JSON and write to the response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+	return nil
 }
 
 var GetVideoByIDOp = openapi3Struct.Path{
@@ -116,32 +112,28 @@ var GetVideoByIDOp = openapi3Struct.Path{
 	},
 }
 
-func (vah *VideoAnalysisHandler) GetVideoAnalysisByID() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		videoId := mux.Vars(r)["id"]
-		videoUuid, err := uuid.Parse(videoId)
-		if err != nil {
-			http.Error(w, "error parsing ID", http.StatusBadRequest)
-			return
-		}
-
-		defer r.Body.Close()
-
-		video, err := vah.videoUsecase.GetByID(ctx, videoUuid)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		// Convert the result to JSON and write to the response
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(mapVideoToModel(*video))
-		if err != nil {
-			http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		}
-
+func (vah *VideoAnalysisHandler) GetVideoAnalysisByID(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	videoId := mux.Vars(r)["id"]
+	videoUuid, err := uuid.Parse(videoId)
+	if err != nil {
+		return err
 	}
+
+	defer r.Body.Close()
+
+	video, err := vah.videoUsecase.GetByID(ctx, videoUuid)
+	if err != nil {
+		return err
+	}
+
+	// Convert the result to JSON and write to the response
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(mapVideoToModel(*video))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func mapVideoDTOToDomain(data models.CreateVideoDto) domain.CreateVideoDto {

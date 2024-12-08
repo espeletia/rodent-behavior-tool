@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"tusk/internal/domain"
 	"tusk/internal/handlers/models"
 	"tusk/internal/ports"
 	"tusk/internal/util"
@@ -147,75 +148,63 @@ var UploadOp = openapi3Struct.Path{
 	},
 }
 
-func (mh *MediaHandler) Upload() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		r.Body = http.MaxBytesReader(w, r.Body, mh.maxUploadSize)
-		if err := r.ParseMultipartForm(mh.maxUploadSize); err != nil {
-			http.Error(w, "File too big", http.StatusBadRequest)
-			return
-		}
-
-		// Parse the uploaded file
-		file, handler, err := r.FormFile("file")
-		if err != nil {
-			http.Error(w, "Invalid file upload", http.StatusInternalServerError)
-			zap.L().Error("Invalid file upload")
-			return
-		}
-		defer file.Close()
-
-		// Get the content type
-		buffer := make([]byte, 512)
-		if _, err := file.Read(buffer); err != nil {
-			http.Error(w, "Unable to read file", http.StatusInternalServerError)
-			zap.L().Error("Unable to read file")
-			return
-		}
-		contentType := http.DetectContentType(buffer)
-
-		// Validate file type
-		if !isValidFileType(contentType) {
-			http.Error(w, "Invalid file type", http.StatusBadRequest)
-			zap.L().Error("Invalid file type", zap.String("contentType", contentType))
-			return
-		}
-
-		// Sanitize the filename
-		zap.L().Info("debug line", zap.String("filename", handler.Filename))
-		filename := filepath.Base(handler.Filename)
-
-		tmpDir, err := createTempDir("tmp")
-		if err != nil {
-			http.Error(w, "Failed to save file", http.StatusInternalServerError)
-			return
-		}
-
-		// Reset file pointer
-		file.Seek(0, 0)
-
-		tempFile, err := ports.NewTempFile(tmpDir, file)
-		if err != nil {
-			http.Error(w, "Failed to save file", http.StatusInternalServerError)
-			return
-		}
-
-		url, err := mh.mediaUsecase.DefaultFileUpload(ctx, tempFile.Path(), contentType, filename)
-		if err != nil {
-			http.Error(w, "Failed to upload file", http.StatusInternalServerError)
-			zap.L().Error("S3 Upload Error:", zap.Error(err))
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(models.UploadResponse{
-			UploadUrl: url,
-		})
-		if err != nil {
-			http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		}
-		w.WriteHeader(http.StatusOK)
+func (mh *MediaHandler) Upload(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	r.Body = http.MaxBytesReader(w, r.Body, mh.maxUploadSize)
+	if err := r.ParseMultipartForm(mh.maxUploadSize); err != nil {
+		return err
 	}
+
+	// Parse the uploaded file
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Get the content type
+	buffer := make([]byte, 512)
+	if _, err := file.Read(buffer); err != nil {
+		return err
+	}
+	contentType := http.DetectContentType(buffer)
+
+	// Validate file type
+	if !isValidFileType(contentType) {
+		return domain.InvalidFileType
+	}
+
+	// Sanitize the filename
+	zap.L().Info("debug line", zap.String("filename", handler.Filename))
+	filename := filepath.Base(handler.Filename)
+
+	tmpDir, err := createTempDir("tmp")
+	if err != nil {
+		return err
+	}
+
+	// Reset file pointer
+	file.Seek(0, 0)
+
+	tempFile, err := ports.NewTempFile(tmpDir, file)
+	if err != nil {
+		return err
+	}
+
+	url, err := mh.mediaUsecase.DefaultFileUpload(ctx, tempFile.Path(), contentType, filename)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(models.UploadResponse{
+		UploadUrl: url,
+	})
+	if err != nil {
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
 }
 
 func isValidFileType(contentType string) bool {

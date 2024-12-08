@@ -87,23 +87,24 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
 	mediaHandler := handlers.NewMediaHandler(mediaUsecase)
 	videoHandler := handlers.NewVideoAnalysisHandler(videoUsecase)
+	commonHandler := handlers.NewCommonHandler()
 
 	router := mux.NewRouter()
 	router.Use(middleware.Authentication(authUsecase))
 	// connectivity test
-	router.Handle("/", userHandler.Ping()).Methods("GET")
+	router.Handle("/", commonHandler.Handle(userHandler.Ping)).Methods("GET")
 
 	// users
-	router.Handle("/register", userHandler.CreateUser()).Methods("PUT")
-	router.Handle("/login", userHandler.Login()).Methods("POST")
-	router.Handle("/me", userHandler.Me()).Methods("GET")
+	router.Handle("/register", commonHandler.Handle(userHandler.CreateUser)).Methods("PUT")
+	router.Handle("/login", commonHandler.Handle(userHandler.Login)).Methods("POST")
+	router.Handle("/me", commonHandler.Handle(userHandler.Me)).Methods("GET")
 
 	// media
-	router.Handle("/upload", mediaHandler.Upload()).Methods("PUT")
+	router.Handle("/upload", commonHandler.Handle(mediaHandler.Upload)).Methods("PUT")
 
 	// videos
-	router.Handle("/video", videoHandler.CreateVideoAnalysis()).Methods("PUT")
-	router.Handle("/video/{id}", videoHandler.GetVideoAnalysisByID()).Methods("GET")
+	router.Handle("/video", commonHandler.Handle(videoHandler.CreateVideoAnalysis)).Methods("PUT")
+	router.Handle("/video/{id}", commonHandler.Handle(videoHandler.GetVideoAnalysisByID)).Methods("GET")
 
 	specHandler, _, err := handlers.HandleSwaggerFile()
 	if err != nil {

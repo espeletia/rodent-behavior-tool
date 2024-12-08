@@ -43,19 +43,14 @@ var PingOp = openapi3Struct.Path{
 	},
 }
 
-func (ph *UserHandler) Ping() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		response := struct {
-			Message string `json:"message"`
-		}{
-			Message: "PONG!",
-		}
-		err := json.NewEncoder(w).Encode(response)
-		if err != nil {
-			w.WriteHeader(400)
-			return
-		}
+func (ph *UserHandler) Ping(w http.ResponseWriter, r *http.Request) error {
+	response := struct {
+		Message string `json:"message"`
+	}{
+		Message: "PONG!",
 	}
+	err := json.NewEncoder(w).Encode(response)
+	return err
 }
 
 var MeOp = openapi3Struct.Path{
@@ -81,21 +76,19 @@ var MeOp = openapi3Struct.Path{
 	},
 }
 
-func (uu *UserHandler) Me() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		user, err := uu.userUsecase.Me(ctx)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		mappedUser := mapDomainUserToModelUser(*user)
-		err = json.NewEncoder(w).Encode(mappedUser)
-		if err != nil {
-			http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		}
+func (uu *UserHandler) Me(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	user, err := uu.userUsecase.Me(ctx)
+	if err != nil {
+		return err
 	}
+	w.Header().Set("Content-Type", "application/json")
+	mappedUser := mapDomainUserToModelUser(*user)
+	err = json.NewEncoder(w).Encode(mappedUser)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var LoginOp = openapi3Struct.Path{
@@ -134,32 +127,28 @@ var LoginOp = openapi3Struct.Path{
 	},
 }
 
-func (uu *UserHandler) Login() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		var creds models.LoginCreds
-		err := json.NewDecoder(r.Body).Decode(&creds)
-		if err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-		defer r.Body.Close()
-
-		usr, err := uu.authUsecase.Login(ctx, mapModelUserCreds(creds))
-		if err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-		// Convert the result to JSON and write to the response
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(models.LoginResp{
-			Token: usr,
-		})
-		if err != nil {
-			http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		}
-
+func (uu *UserHandler) Login(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	var creds models.LoginCreds
+	err := json.NewDecoder(r.Body).Decode(&creds)
+	if err != nil {
+		return err
 	}
+	defer r.Body.Close()
+
+	usr, err := uu.authUsecase.Login(ctx, mapModelUserCreds(creds))
+	if err != nil {
+		return err
+	}
+	// Convert the result to JSON and write to the response
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(models.LoginResp{
+		Token: usr,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var CreateUserOp = openapi3Struct.Path{
@@ -198,32 +187,28 @@ var CreateUserOp = openapi3Struct.Path{
 	},
 }
 
-func (uu *UserHandler) CreateUser() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		// Decode the JSON body to the `Viewport` struct
-		var userData models.UserData
-		err := json.NewDecoder(r.Body).Decode(&userData)
-		if err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		defer r.Body.Close()
-
-		usr, err := uu.userUsecase.CreateUser(ctx, mapModelUserDataToDomainUserData(userData), userData.Password)
-		if err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-		// Convert the result to JSON and write to the response
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(mapDomainUserToModelUser(*usr))
-		if err != nil {
-			http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		}
-
+func (uu *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	// Decode the JSON body to the `Viewport` struct
+	var userData models.UserData
+	err := json.NewDecoder(r.Body).Decode(&userData)
+	if err != nil {
+		return err
 	}
+
+	defer r.Body.Close()
+
+	usr, err := uu.userUsecase.CreateUser(ctx, mapModelUserDataToDomainUserData(userData), userData.Password)
+	if err != nil {
+		return err
+	}
+	// Convert the result to JSON and write to the response
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(mapDomainUserToModelUser(*usr))
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func mapModelUserDataToDomainUserData(usr models.UserData) domain.UserData {
