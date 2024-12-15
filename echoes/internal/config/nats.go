@@ -30,7 +30,7 @@ type StreamsConfig struct {
 func loadNatsConfig() NatsConfig {
 	natsConfig := &NatsConfig{}
 	v := configViper("nats")
-	err := v.BindEnv("Host", "NATS_URL", "DEMETER_NATS_URL")
+	err := v.BindEnv("Host", "NATS_URL")
 	if err != nil {
 		panic(err)
 	}
