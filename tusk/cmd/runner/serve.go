@@ -38,7 +38,7 @@ func Serve() error {
 }
 
 func setupService(configuration *config.Config) (*TuskServiceComponents, error) {
-	logger := setup.InitLogger(*&configuration.CommonConfig)
+	logger := setup.InitLogger(configuration.CommonConfig)
 	s, err := json.MarshalIndent(configuration, "", "\t")
 	if err != nil {
 		logger.Error("Failed to marshal configuration", zap.Error(err))
