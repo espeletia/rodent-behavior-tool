@@ -2,9 +2,11 @@ package runner
 
 import (
 	"encoding/json"
+	commonHandlers "ghiaccio/handlers"
 	"ghiaccio/setup"
 	"net/http"
 	"valentine/internal/config"
+	"valentine/internal/handlers"
 
 	"github.com/gorilla/mux"
 	"github.com/nextap-solutions/goNextService"
@@ -43,6 +45,13 @@ func setupService(configuration *config.Config) (*ValentineServiceComponents, er
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
 	}).Methods("GET")
+
+	viewHandler := handlers.NewViewHandler()
+
+	commonHandler := commonHandlers.NewCommonHandler()
+
+	router.Handle("/", commonHandler.Handle(viewHandler.Render)).Methods("GET")
+	router.Handle("/app", commonHandler.Handle(viewHandler.App)).Methods("GET")
 
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},

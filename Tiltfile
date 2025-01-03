@@ -16,7 +16,7 @@ def app(name, special_dockerfile = False, migrations = True):
       'cd %s && ./ci/build.sh' % name,
       deps=[
       './%s/' % name,
-      './iris/'
+      './ghiaccio/'
       ],
       ignore=[
       'tilt_modules',

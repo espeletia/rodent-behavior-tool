@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"encoding/json"
+	commonHandlers "ghiaccio/handlers"
 	"net/http"
 	"tusk/internal/config"
 	"tusk/internal/handlers"
@@ -87,7 +88,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
 	mediaHandler := handlers.NewMediaHandler(mediaUsecase)
 	videoHandler := handlers.NewVideoAnalysisHandler(videoUsecase)
-	commonHandler := handlers.NewCommonHandler()
+	commonHandler := commonHandlers.NewCommonHandler()
 
 	router := mux.NewRouter()
 	router.Use(middleware.Authentication(authUsecase))
