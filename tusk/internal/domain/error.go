@@ -19,4 +19,5 @@ var (
 	URLIsNotUploadFoundError = Error{Message: "Url is not upload url", Code: http.StatusBadRequest}
 	UrlNotFoundError         = Error{Message: "Url not found", Code: http.StatusBadRequest}
 	InvalidFileType          = Error{Message: "Invalid file type, allowed types: image/jpeg, image/png, video/mp4, video/mpeg", Code: http.StatusBadRequest}
+	CageNotFound             = Error{Message: "Cage not found", Code: http.StatusNotFound}
 )

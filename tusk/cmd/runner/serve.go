@@ -76,18 +76,21 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	userStore := database.NewUserDatabaseStore(dbconn)
 	mediaStore := database.NewMediaDatabaseStore(dbconn)
 	videoStore := database.NewVideoDatabaseStore(dbconn)
+	cagesStore := database.NewCagesDatabaseStore(dbconn)
 
 	// usecases
 	userUsecase := usecases.NewUserUsecase(userStore)
 	mediaUsecase := usecases.NewMediaUsecase(mediaStore, fileManager, configuration.S3Config.URL, configuration.S3Config.UploadsPathPrefix, configuration.S3Config.Bucket)
 	videoUsecase := usecases.NewVideoUsecase(mediaUsecase, videoStore, natsqueue)
 	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator)
+	cagesUsecase := usecases.NewCagesUsecase(cagesStore, configuration.CagesConfig.ActivationCodeLength)
 
 	// rest handlers
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
 	mediaHandler := handlers.NewMediaHandler(mediaUsecase)
 	videoHandler := handlers.NewVideoAnalysisHandler(videoUsecase)
 	commonHandler := handlers.NewCommonHandler()
+	cagesHandler := handlers.NewCagesHandler(cagesUsecase)
 
 	router := mux.NewRouter()
 	router.Use(middleware.Authentication(authUsecase))
@@ -105,6 +108,11 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	// videos
 	router.Handle("/video", commonHandler.Handle(videoHandler.CreateVideoAnalysis)).Methods("PUT")
 	router.Handle("/video/{id}", commonHandler.Handle(videoHandler.GetVideoAnalysisByID)).Methods("GET")
+
+	// cages
+	router.Handle("/cages", commonHandler.Handle(cagesHandler.CreateCage)).Methods("POST")
+	router.Handle("/cages", commonHandler.Handle(cagesHandler.GetCagesForUser)).Methods("GET")
+	router.Handle("/activate/{code}", commonHandler.Handle(cagesHandler.RegisterCage)).Methods("GET")
 
 	specHandler, _, err := handlers.HandleSwaggerFile()
 	if err != nil {
