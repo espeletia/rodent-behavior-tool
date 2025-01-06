@@ -82,8 +82,8 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	userUsecase := usecases.NewUserUsecase(userStore)
 	mediaUsecase := usecases.NewMediaUsecase(mediaStore, fileManager, configuration.S3Config.URL, configuration.S3Config.UploadsPathPrefix, configuration.S3Config.Bucket)
 	videoUsecase := usecases.NewVideoUsecase(mediaUsecase, videoStore, natsqueue)
-	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator)
-	cagesUsecase := usecases.NewCagesUsecase(cagesStore, configuration.CagesConfig.ActivationCodeLength)
+	cagesUsecase := usecases.NewCagesUsecase(cagesStore, configuration.CagesConfig.ActivationCodeLength, configuration.CagesConfig.SecretTokenLength)
+	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator, cagesUsecase)
 
 	// rest handlers
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
@@ -94,6 +94,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 
 	router := mux.NewRouter()
 	router.Use(middleware.Authentication(authUsecase))
+	router.Use(middleware.AuthenticationForCages(authUsecase))
 	// connectivity test
 	router.Handle("/", commonHandler.Handle(userHandler.Ping)).Methods("GET")
 
@@ -113,6 +114,10 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	router.Handle("/cages", commonHandler.Handle(cagesHandler.CreateCage)).Methods("POST")
 	router.Handle("/cages", commonHandler.Handle(cagesHandler.GetCagesForUser)).Methods("GET")
 	router.Handle("/activate/{code}", commonHandler.Handle(cagesHandler.RegisterCage)).Methods("GET")
+
+	// cages internal
+	router.Handle("/internal/cage", commonHandler.Handle(cagesHandler.CageSelf)).Methods("GET")
+	router.Handle("/internal/cage/message", commonHandler.Handle(cagesHandler.ProcessMessage)).Methods("POST")
 
 	specHandler, _, err := handlers.HandleSwaggerFile()
 	if err != nil {

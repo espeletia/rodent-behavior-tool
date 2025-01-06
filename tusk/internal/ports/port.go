@@ -31,9 +31,11 @@ type TokenGeneratorAuthInterface interface {
 }
 
 type CagesDatabaseStore interface {
-	CreateNewCage(ctx context.Context, activation string) error
+	CreateNewCage(ctx context.Context, activation, secretToken string) error
 	ActivateCage(ctx context.Context, userId uuid.UUID, activationCode string) error
 	GetCagesByUserId(ctx context.Context, userId uuid.UUID) ([]domain.Cage, error)
+	GetCageBySecretToken(ctx context.Context, secretToken string) (*domain.Cage, error)
+	InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageId uuid.UUID) error
 }
 
 type QueueHandler interface {

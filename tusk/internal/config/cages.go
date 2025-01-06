@@ -6,6 +6,7 @@ import (
 
 type CagesConfig struct {
 	ActivationCodeLength int64
+	SecretTokenLength    int64
 }
 
 func loadCagesConfig() CagesConfig {

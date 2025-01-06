@@ -1,1 +1,3 @@
 ActivationCodeLength: 5
+SecretTokenLength: 20
+
