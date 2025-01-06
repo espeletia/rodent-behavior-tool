@@ -100,6 +100,8 @@ func main() {
 	p.AddPath(handlers.CreateCageOp)
 	p.AddPath(handlers.RegisterCageOp)
 	p.AddPath(handlers.UserGetCagesOp)
+	p.AddPath(handlers.CageGetSelfOp)
+	p.AddPath(handlers.CageSendMessageOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {

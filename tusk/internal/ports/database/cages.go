@@ -24,17 +24,19 @@ func NewCagesDatabaseStore(db *sql.DB) *CagesDatabaseStore {
 	}
 }
 
-func (cdbs *CagesDatabaseStore) CreateNewCage(ctx context.Context, activation string) error {
+func (cdbs *CagesDatabaseStore) CreateNewCage(ctx context.Context, activation, secretToken string) error {
 	insertModel := model.RodentCages{
 		ID:             uuid.New(),
 		ActivationCode: activation,
 		Name:           "Inactive " + activation,
+		SecretToken:    secretToken,
 	}
 
 	insertStmt := table.RodentCages.INSERT(
 		table.RodentCages.ID,
 		table.RodentCages.ActivationCode,
-		table.RodentCages.Name).
+		table.RodentCages.Name,
+		table.RodentCages.SecretToken).
 		MODEL(insertModel)
 
 	r, err := insertStmt.ExecContext(ctx, cdbs.db)
@@ -77,6 +79,24 @@ func (cdbs *CagesDatabaseStore) ActivateCage(ctx context.Context, userId uuid.UU
 	return nil
 }
 
+func (cdbs *CagesDatabaseStore) GetCageBySecretToken(ctx context.Context, secretToken string) (*domain.Cage, error) {
+	dest := []model.RodentCages{}
+
+	selectStmt := table.RodentCages.SELECT(table.RodentCages.AllColumns).WHERE(table.RodentCages.SecretToken.EQ(postgres.String(secretToken)))
+
+	err := selectStmt.QueryContext(ctx, cdbs.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(dest) != 1 {
+		return nil, domain.CageNotFound
+	}
+
+	mappedCage := mapCageToDomain(dest[0])
+	return &mappedCage, nil
+}
+
 func (cdbs *CagesDatabaseStore) GetCagesByUserId(ctx context.Context, userId uuid.UUID) ([]domain.Cage, error) {
 	dest := []model.RodentCages{}
 
@@ -95,6 +115,41 @@ func (cdbs *CagesDatabaseStore) GetCagesByUserId(ctx context.Context, userId uui
 	return result, nil
 }
 
+func (cdbs *CagesDatabaseStore) InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageID uuid.UUID) error {
+	insertModel := model.CageMessages{
+		CageID:   cageID,
+		Revision: int32(cageMessage.Revision),
+		Water:    int32(cageMessage.Water),
+		Food:     int32(cageMessage.Food),
+		Light:    int32(cageMessage.Light),
+		Temp:     int32(cageMessage.Temp),
+		Humidity: int32(cageMessage.Humidity),
+		TimeSent: cageMessage.Timestamp,
+		VideoURL: cageMessage.VideoUrl,
+	}
+
+	insertStmt := table.CageMessages.INSERT(table.CageMessages.AllColumns.Except(
+		table.CageMessages.ID,
+		table.CageMessages.VideoID,
+		table.CageMessages.UpdatedAt,
+		table.CageMessages.CreatedAt,
+	)).MODEL(insertModel)
+
+	r, err := insertStmt.ExecContext(ctx, cdbs.db)
+	if err != nil {
+		return err
+	}
+	rows, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows != 1 {
+		return errors.New("failed to insert cage message")
+	}
+
+	return nil
+}
+
 func mapCageToDomain(cage model.RodentCages) domain.Cage {
 	registered := time.Now() // TODO: make this better
 	if cage.RegisteredAt != nil {
@@ -102,6 +157,7 @@ func mapCageToDomain(cage model.RodentCages) domain.Cage {
 	}
 	return domain.Cage{
 		ID:          cage.ID,
+		UserID:      cage.UserID,
 		Name:        cage.Name,
 		Description: cage.Description,
 		Register:    registered,
