@@ -69,3 +69,29 @@ class SmallDisplay:
         self.oled.image(self.image)
         self.oled.show()
 
+    def draw_smiley_face(self):
+        # Clear the image before drawing
+        self.clear_display()
+
+        # Draw the face using individual pixels
+        for x in range(32, 97):
+            for y in range(16, 81):
+                if (x - 64)**2 + (y - 48)**2 <= 32**2:  # Circle equation
+                    self.draw.point((x, y), fill=255)
+
+        # Draw the eyes
+        for x in range(50, 59):
+            for y in range(32, 41):
+                self.draw.point((x, y), fill=255)
+        for x in range(70, 79):
+            for y in range(32, 41):
+                self.draw.point((x, y), fill=255)
+
+        # Draw the smile
+        for x in range(48, 81):
+            y = int(72 - ((32**2 - (x-64)**2)**0.5))  # Semi-circle for smile
+            self.draw.point((x, y), fill=255)
+
+        # Update the OLED display
+        self.oled.image(self.image)
+        self.oled.show()
