@@ -48,6 +48,18 @@ class SmallDisplay:
         self.oled.image(self.image)
         self.oled.show()
 
+    def draw_success(self, text):
+        # Clear the image before drawing
+        self.clear_display()
+
+        # Draw the text
+        self.draw.text((0, 0), "Cage Active!", font=self.font, fill=255)
+        self.draw.text((0, 16), f"{text}", font=self.font, fill=255)
+
+        # Update the OLED display
+        self.oled.image(self.image)
+        self.oled.show()
+
     def clear_display(self):
         # Clear the image
         self.draw.rectangle(
