@@ -86,7 +86,6 @@ if __name__ == "__main__":
         if user_id is not None:
             print(user_id)
             display.draw_success(user_id)
-            display.draw_smiley_face()
 
     else:
         print("Failed to initialize cage.")

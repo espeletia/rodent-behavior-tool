@@ -56,6 +56,27 @@ class SmallDisplay:
         self.draw.text((0, 0), "Cage Active!", font=self.font, fill=255)
         self.draw.text((0, 16), f"{text}", font=self.font, fill=255)
 
+        pixel_art = [
+            "011000011000000",
+            "100111100100000",
+            "101000010100000",
+            "010101001000000",
+            "010010001000000",
+            "010000001000000",
+            "001000100100000",
+            "010001000100000",
+            "010101010100000",
+            "001000100100000",
+            "001000000100000",
+            "001100100110000",
+            "000011011011111"
+        ]
+
+        for y, row in enumerate(pixel_art):
+            for x, pixel in enumerate(row):
+                if pixel == '1':
+                    self.draw.point((x, y+34), fill=255)
+
         # Update the OLED display
         self.oled.image(self.image)
         self.oled.show()
@@ -91,6 +112,35 @@ class SmallDisplay:
         for x in range(48, 81):
             y = int(72 - ((32**2 - (x-64)**2)**0.5))  # Semi-circle for smile
             self.draw.point((x, y), fill=255)
+
+        # Update the OLED display
+        self.oled.image(self.image)
+        self.oled.show()
+
+    def draw_pixel_art(self):
+        # Clear the image before drawing
+        self.clear_display()
+
+        pixel_art = [
+            "011000011000000",
+            "100111100100000",
+            "101000010100000",
+            "010101001000000",
+            "010010001000000",
+            "010000001000000",
+            "001000100100000",
+            "010001000100000",
+            "010101010100000",
+            "001000100100000",
+            "001000000100000",
+            "001100100110000",
+            "000011011011111"
+        ]
+
+        for y, row in enumerate(pixel_art):
+            for x, pixel in enumerate(row):
+                if pixel == '1':
+                    self.draw.point((x, y), fill=255)
 
         # Update the OLED display
         self.oled.image(self.image)
