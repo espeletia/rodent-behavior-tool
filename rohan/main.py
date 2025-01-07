@@ -1,5 +1,5 @@
 import requests
-from lcd import SmallDisplay
+from lcd.lcd import SmallDisplay
 
 API_URL = "http://192.168.0.111:8081"
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     response = make_request(url)
     activation, secret_token = init_cage()
     if activation and secret_token:
-        display.DrawText(activation)
         print(activation, secret_token)
+        display.DrawText(activation)
     else:
         print("Failed to initialize cage.")
