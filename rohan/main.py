@@ -96,6 +96,7 @@ if __name__ == "__main__":
                 print(f"water left: {waterDistance}")
                 # print(f"Visible light level: {visible}")
                 print(f"Lux (calculated): {lux}")
+                time.sleep(1)
                 # print()
 
     else:
