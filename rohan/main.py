@@ -26,7 +26,7 @@ def make_request(url, method='GET', data=None, headers=None):
 
 def init_cage():
     try:
-        response = requests.post(API_URL + "/cages")
+        response = requests.post(f"{API_URL}/cages")
         response.raise_for_status()
         if 'application/json' in response.headers.get('Content-Type', ''):
             response_json = response.json()
@@ -48,6 +48,6 @@ if __name__ == "__main__":
     activation, secret_token = init_cage()
     if activation and secret_token:
         print(activation, secret_token)
-        display.DrawText(activation)
+        display.draw_text(activation)
     else:
         print("Failed to initialize cage.")

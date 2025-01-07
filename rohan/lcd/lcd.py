@@ -36,9 +36,9 @@ class SmallDisplay:
         # Load font
         self.font = ImageFont.truetype("PixelOperator.ttf", 16)
 
-    def Draw_text(self, text):
+    def draw_text(self, text):
         # Clear the image before drawing
-        self.Clear_display()
+        self.clear_display()
 
         # Draw the text
         self.draw.text((0, 0), "ACTIVATION TOKEN:", font=self.font, fill=255)
@@ -48,7 +48,7 @@ class SmallDisplay:
         self.oled.image(self.image)
         self.oled.show()
 
-    def Clear_display(self):
+    def clear_display(self):
         # Clear the image
         self.draw.rectangle(
             (0, 0, self.oled.width, self.oled.height), outline=0, fill=0)
