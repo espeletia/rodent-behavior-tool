@@ -5,6 +5,7 @@ import os
 
 from lcd.lcd import SmallDisplay
 from ultrasonic.ultrasonic import UltrasonicSensor
+from light.light import LightSensor
 
 API_URL = "http://192.168.0.111:8081"
 CONFIG_FILE = "cage_config.json"
@@ -72,6 +73,7 @@ def poll_cage_status(secret_token):
 if __name__ == "__main__":
     food = UltrasonicSensor(24, 18)
     water = UltrasonicSensor(23, 17)
+    light = LightSensor()
     display = SmallDisplay()
     url = "/"
     response = make_request(url)
@@ -86,6 +88,15 @@ if __name__ == "__main__":
         if user_id is not None:
             print(user_id)
             display.draw_success(user_id)
+            while True:
+                foodDistance = food.get_distance_cm()
+                waterDistance = water.get_distance_cm()
+                lux = light.read_tsl2591()
+                print(f"food left: {foodDistance}cm")
+                print(f"water left: {waterDistance}")
+                # print(f"Visible light level: {visible}")
+                print(f"Lux (calculated): {lux}")
+                # print()
 
     else:
         print("Failed to initialize cage.")
