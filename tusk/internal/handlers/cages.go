@@ -142,6 +142,7 @@ func (ch *CagesHandler) GetCagesForUser(w http.ResponseWriter, r *http.Request) 
 	for _, cage := range cages {
 		result = append(result, mapCageToModel(cage))
 	}
+	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(models.Cages{Data: result})
 	if err != nil {
 		return err
@@ -179,6 +180,7 @@ func (ch *CagesHandler) CageSelf(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	mappedCage := mapCageToModel(*cage)
+	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(mappedCage)
 	if err != nil {
 		return err

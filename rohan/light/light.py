@@ -25,7 +25,9 @@ class LightSensor():
             print(f"Infrared light level: {infrared}")
             print(f"Visible light level: {visible}")
             print(f"Lux (calculated): {lux}")
+            return lux
         except Exception as e:
             print(f"Error reading sensor: {e}")
+            return None
 
 # Read and display sensor data
