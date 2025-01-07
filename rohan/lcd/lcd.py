@@ -71,11 +71,21 @@ class SmallDisplay:
             "001100100110000",
             "000011011011111"
         ]
+        scale = 2
 
+        # Draw each pixel
         for y, row in enumerate(pixel_art):
             for x, pixel in enumerate(row):
                 if pixel == '1':
-                    self.draw.point((x, y+34), fill=255)
+                    self.draw.rectangle([
+                        x * scale, y * scale + 34,
+                        x * scale + 1, y * scale + 1 + 34,
+                    ], fill=255)
+
+        # for y, row in enumerate(pixel_art):
+        #     for x, pixel in enumerate(row):
+        #         if pixel == '1':
+        #             self.draw.point((x, y+34), fill=255)
 
         # Update the OLED display
         self.oled.image(self.image)
