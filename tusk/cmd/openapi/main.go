@@ -81,7 +81,7 @@ func main() {
 		},
 	}
 
-	p := openapi3Struct.NewParser(t, openapi3Struct.WithPackagePaths([]string{"../internal/handlers/models/"}))
+	p := openapi3Struct.NewParser(t, openapi3Struct.WithPackagePaths([]string{"./../../ghiaccio/models/"}))
 	err := p.ParseSchemasFromStructs()
 	if err != nil {
 		log.Fatalf("ParseSchemasFromStructs %v", err)
