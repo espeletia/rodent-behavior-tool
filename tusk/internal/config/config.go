@@ -14,6 +14,7 @@ type Config struct {
 	HashConfig       HashConfig
 	JWTConfig        JWTConfig
 	NatsConfig       NatsConfig
+	CagesConfig      CagesConfig
 }
 
 func LoadConfig() *Config {
@@ -26,6 +27,7 @@ func LoadConfig() *Config {
 		HashConfig:       loadHashConfig(),
 		JWTConfig:        loadJWTConfig(),
 		NatsConfig:       loadNatsConfig(),
+		CagesConfig:      loadCagesConfig(),
 	}
 }
 

@@ -24,6 +24,9 @@ func main() {
 				"ID": openapi3.NewSchemaRef("", &openapi3.Schema{
 					Type: "string",
 				}),
+				"Code": openapi3.NewSchemaRef("", &openapi3.Schema{
+					Type: "string",
+				}),
 			},
 			Parameters: map[string]*openapi3.ParameterRef{
 				"beforeQuery": {
@@ -94,6 +97,11 @@ func main() {
 	p.AddPath(handlers.UploadOp)
 	p.AddPath(handlers.CreateVideoOp)
 	p.AddPath(handlers.GetVideoByIDOp)
+	p.AddPath(handlers.CreateCageOp)
+	p.AddPath(handlers.RegisterCageOp)
+	p.AddPath(handlers.UserGetCagesOp)
+	p.AddPath(handlers.CageGetSelfOp)
+	p.AddPath(handlers.CageSendMessageOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {

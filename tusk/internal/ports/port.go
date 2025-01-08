@@ -30,6 +30,14 @@ type TokenGeneratorAuthInterface interface {
 	ValidateUserJWT(ctx context.Context, token string) (*uuid.UUID, error)
 }
 
+type CagesDatabaseStore interface {
+	CreateNewCage(ctx context.Context, activation, secretToken string) error
+	ActivateCage(ctx context.Context, userId uuid.UUID, activationCode string) error
+	GetCagesByUserId(ctx context.Context, userId uuid.UUID) ([]domain.Cage, error)
+	GetCageBySecretToken(ctx context.Context, secretToken string) (*domain.Cage, error)
+	InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageId uuid.UUID) error
+}
+
 type QueueHandler interface {
 	AddAnalystJob(ctx context.Context, job commonDomain.AnalystJobMessage) error
 	AddEncoderJob(ctx context.Context, job commonDomain.VideoEncodingMessage) error

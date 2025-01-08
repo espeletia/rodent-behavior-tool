@@ -5,3 +5,4 @@ test_images/
 best.pt
 gen/
 swagger.yaml
+rohan/cage_config.json

@@ -10,13 +10,15 @@ import (
 
 type AuthUsecase struct {
 	Users  *UserUsecase
+	Cages  *CagesUsecase
 	Tokens ports.TokenGeneratorAuthInterface
 }
 
-func NewAuthUsecase(uu *UserUsecase, tokenGenerator ports.TokenGeneratorAuthInterface) *AuthUsecase {
+func NewAuthUsecase(uu *UserUsecase, tokenGenerator ports.TokenGeneratorAuthInterface, cages *CagesUsecase) *AuthUsecase {
 	return &AuthUsecase{
 		Users:  uu,
 		Tokens: tokenGenerator,
+		Cages:  cages,
 	}
 }
 
@@ -53,4 +55,12 @@ func (au *AuthUsecase) Authenticate(ctx context.Context, token string) (*domain.
 	}
 
 	return user, nil
+}
+
+func (au *AuthUsecase) AuthenticateCage(ctx context.Context, secretToken string) (*domain.Cage, error) {
+	cage, err := au.Cages.cageDatabaseStore.GetCageBySecretToken(ctx, secretToken)
+	if err != nil {
+		return nil, err
+	}
+	return cage, nil
 }
