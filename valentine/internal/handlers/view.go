@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"time"
-	"valentine/internal/domain"
 	"valentine/internal/usecases"
 	"valentine/view"
 )

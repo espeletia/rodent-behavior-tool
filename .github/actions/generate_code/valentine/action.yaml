@@ -22,8 +22,3 @@ runs:
       run: |
         go generate ./cmd/main.go
 
-    - name: Install go-templ deps
-      shell: bash
-      run: |
-        cd valentine && go mod tidy
-
