@@ -79,6 +79,22 @@ def send_cage_message(secret_token, light, food, water, revision, timestamp, vid
         "video_url": videoUrl,
         "water": water
     }
+    try:
+        headers = {
+            "Authorization": f"Bearer {secret_token}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(
+            f"{API_URL}/internal/cage/message", json=message, headers=headers)
+        response.raise_for_status()
+        if 'application/json' in response.headers.get('Content-Type', ''):
+            response_json = response.json()
+            user_id = response_json.get('user_id')
+            return user_id
+        else:
+            raise ValueError("Response is not JSON")
+    except requests.exceptions.RequestException as e:
+        return f"Error sending cage message: {e}"
 
 
 # Example usage:
