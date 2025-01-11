@@ -129,8 +129,8 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	if err != nil {
 		logger.Error("Swagger handler disabled, cause:", zap.Error(err))
 	} else {
-		router.Handle("/swagger.json", specHandler).Methods("GET")
-		router.Handle("/swagger", handlers.HandleSwaggerUI()).Methods("GET")
+		masterRouter.Handle("/swagger.json", specHandler).Methods("GET")
+		masterRouter.Handle("/swagger", handlers.HandleSwaggerUI()).Methods("GET")
 	}
 
 	corsMiddleware := cors.New(cors.Options{
@@ -139,7 +139,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 		AllowCredentials: true,
 	})
 
-	handler := corsMiddleware.Handler(router)
+	handler := corsMiddleware.Handler(masterRouter)
 	api := http.Server{
 		Addr:         "0.0.0.0:" + configuration.ServerConfig.Port,
 		ReadTimeout:  configuration.ServerConfig.ReadTimeout,

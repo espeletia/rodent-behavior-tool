@@ -4,11 +4,10 @@ import json
 import os
 
 from lcd.lcd import SmallDisplay
+from configuration.config import API_URL, DURATION, CONFIG_FILE
+from camera.camera import capture_video, send_video_to_api
 from ultrasonic.ultrasonic import UltrasonicSensor
 from light.light import LightSensor
-
-API_URL = "http://192.168.0.111:8081"
-CONFIG_FILE = "cage_config.json"
 
 
 def make_request(url, method='GET', data=None, headers=None):
@@ -69,14 +68,25 @@ def poll_cage_status(secret_token):
         return f"Error polling cage status: {e}"
 
 
+def send_cage_message(secret_token, light, food, water, revision, timestamp, videoUrl):
+    message = {
+        "food": food,
+        "humidity": 0,
+        "light": light,
+        "revision": revision,
+        "temp": 0,
+        "timestamp": timestamp,
+        "video_url": videoUrl,
+        "water": water
+    }
+
+
 # Example usage:
 if __name__ == "__main__":
     food = UltrasonicSensor(24, 18)
     water = UltrasonicSensor(23, 17)
     light = LightSensor()
     display = SmallDisplay()
-    url = "/"
-    response = make_request(url)
     activation, secret_token = init_cage()
     if activation and secret_token:
         print(activation, secret_token)
@@ -89,6 +99,13 @@ if __name__ == "__main__":
             print(user_id)
             display.draw_success(user_id)
             while True:
+                current_timestamp = int(time.time())
+                output_file = f"./videos/video_{current_timestamp}.mp4"
+                video_file = capture_video(DURATION, output_file)
+                video_upload_response = send_video_to_api(
+                    video_file, f"{API_URL}/v1/upload")
+                os.remove(video_file)
+                print(f"Deleted file: {video_file}")
                 foodDistance = food.get_distance_cm()
                 waterDistance = water.get_distance_cm()
                 lux = light.read_tsl2591()
@@ -96,7 +113,15 @@ if __name__ == "__main__":
                 print(f"water left: {waterDistance}")
                 # print(f"Visible light level: {visible}")
                 print(f"Lux (calculated): {lux}")
-                time.sleep(1)
+                send_cage_message(
+                    secret_token,
+                    light,
+                    foodDistance,
+                    waterDistance,
+                    1,
+                    current_timestamp,
+                    video_upload_response.get('upload_url')
+                )
                 # print()
 
     else:
