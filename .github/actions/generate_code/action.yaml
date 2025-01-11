@@ -18,3 +18,7 @@ runs:
     - name: Generate code for tusk
       if: inputs.service == 'tusk' 
       uses: ./.github/actions/generate_code/tusk
+
+    - name: Generate code for valentine
+      if: inputs.service == 'valentine' 
+      uses: ./.github/actions/generate_code/valentine

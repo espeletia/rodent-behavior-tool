@@ -3,8 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"ghiaccio/domain"
 	"net/http"
-	"tusk/internal/domain"
 
 	"go.uber.org/zap"
 )

@@ -24,6 +24,8 @@ jobs:
           filters: |
             tusk:
               - 'tusk/**'
+            valentine:
+              - 'valentine/**'
             # echoes:
             #   - 'echoes/**'
 

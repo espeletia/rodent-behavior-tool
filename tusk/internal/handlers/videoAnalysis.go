@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"ghiaccio/models"
 	"net/http"
 	"tusk/internal/domain"
-	"tusk/internal/handlers/models"
 	"tusk/internal/usecases"
 	"tusk/internal/util"
 
@@ -26,7 +26,7 @@ func NewVideoAnalysisHandler(videoUsecase *usecases.VideoUsecase) *VideoAnalysis
 }
 
 var CreateVideoOp = openapi3Struct.Path{
-	Path: "/video",
+	Path: "/v1/video",
 	Item: openapi3.PathItem{
 		Put: &openapi3.Operation{
 			Tags:        []string{"VideoAnalysis"},
@@ -79,7 +79,7 @@ func (vah *VideoAnalysisHandler) CreateVideoAnalysis(w http.ResponseWriter, r *h
 }
 
 var GetVideoByIDOp = openapi3Struct.Path{
-	Path: "/video/{id}",
+	Path: "/v1/video/{id}",
 	Item: openapi3.PathItem{
 		Get: &openapi3.Operation{
 			Tags:        []string{"VideoAnalysis"},

@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"encoding/json"
+	commonHandlers "ghiaccio/handlers"
 	"net/http"
 	"tusk/internal/config"
 	"tusk/internal/handlers"
@@ -38,7 +39,7 @@ func Serve() error {
 }
 
 func setupService(configuration *config.Config) (*TuskServiceComponents, error) {
-	logger := setup.InitLogger(*&configuration.CommonConfig)
+	logger := setup.InitLogger(configuration.CommonConfig)
 	s, err := json.MarshalIndent(configuration, "", "\t")
 	if err != nil {
 		logger.Error("Failed to marshal configuration", zap.Error(err))
@@ -89,14 +90,17 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	userHandler := handlers.NewUserHandler(userUsecase, authUsecase)
 	mediaHandler := handlers.NewMediaHandler(mediaUsecase)
 	videoHandler := handlers.NewVideoAnalysisHandler(videoUsecase)
-	commonHandler := handlers.NewCommonHandler()
+	commonHandler := commonHandlers.NewCommonHandler()
 	cagesHandler := handlers.NewCagesHandler(cagesUsecase)
 
-	router := mux.NewRouter()
+	masterRouter := mux.NewRouter()
+	router := masterRouter.PathPrefix("/v1").Subrouter()
+	cagesRouter := masterRouter.PathPrefix("/internal").Subrouter()
+
 	router.Use(middleware.Authentication(authUsecase))
-	router.Use(middleware.AuthenticationForCages(authUsecase))
+
 	// connectivity test
-	router.Handle("/", commonHandler.Handle(userHandler.Ping)).Methods("GET")
+	masterRouter.Handle("/", commonHandler.Handle(userHandler.Ping)).Methods("GET")
 
 	// users
 	router.Handle("/register", commonHandler.Handle(userHandler.CreateUser)).Methods("PUT")
@@ -116,8 +120,10 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	router.Handle("/activate/{code}", commonHandler.Handle(cagesHandler.RegisterCage)).Methods("GET")
 
 	// cages internal
-	router.Handle("/internal/cage", commonHandler.Handle(cagesHandler.CageSelf)).Methods("GET")
-	router.Handle("/internal/cage/message", commonHandler.Handle(cagesHandler.ProcessMessage)).Methods("POST")
+	cagesRouter.Use(middleware.AuthenticationForCages(authUsecase))
+
+	cagesRouter.Handle("/cage", commonHandler.Handle(cagesHandler.CageSelf)).Methods("GET")
+	cagesRouter.Handle("/cage/message", commonHandler.Handle(cagesHandler.ProcessMessage)).Methods("POST")
 
 	specHandler, _, err := handlers.HandleSwaggerFile()
 	if err != nil {

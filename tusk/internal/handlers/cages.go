@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"ghiaccio/models"
 	"net/http"
 	"time"
 	"tusk/internal/domain"
-	"tusk/internal/handlers/models"
 	"tusk/internal/usecases"
 
 	"tusk/internal/util"
@@ -26,7 +26,7 @@ func NewCagesHandler(cagesUsecase *usecases.CagesUsecase) *CagesHandler {
 }
 
 var CreateCageOp = openapi3Struct.Path{
-	Path: "/cages",
+	Path: "/v1/cages",
 	Item: openapi3.PathItem{
 		Post: &openapi3.Operation{
 			Tags:        []string{"Cages"},
@@ -66,7 +66,7 @@ func (ch *CagesHandler) CreateCage(w http.ResponseWriter, r *http.Request) error
 }
 
 var RegisterCageOp = openapi3Struct.Path{
-	Path: "/activate/{code}",
+	Path: "/v1/activate/{code}",
 	Item: openapi3.PathItem{
 		Get: &openapi3.Operation{
 			Tags:        []string{"Cages"},
@@ -110,7 +110,7 @@ func (ch *CagesHandler) RegisterCage(w http.ResponseWriter, r *http.Request) err
 }
 
 var UserGetCagesOp = openapi3Struct.Path{
-	Path: "/cages",
+	Path: "/v1/cages",
 	Item: openapi3.PathItem{
 		Get: &openapi3.Operation{
 			Tags:        []string{"Cages"},
@@ -260,10 +260,10 @@ func mapCageToModel(cage domain.Cage) models.Cage {
 		userID = &userIDStr
 	}
 	return models.Cage{
-		ID:          cage.ID,
+		ID:          cage.ID.String(),
 		UserID:      userID,
 		Description: cage.Description,
-		Register:    cage.Register,
+		Register:    cage.Register.Unix(),
 		Name:        cage.Name,
 	}
 }

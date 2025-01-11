@@ -23,6 +23,8 @@ spec:
           image: tusk-migrations
           command: [ "/app/run_migrations" ]
           env:
+            - name: TUSK_PORT
+              value: "8080"
             - name: SERVICE_NAME
               value: tusk-migrations
             - name: NATS_URL
@@ -33,6 +35,8 @@ spec:
         - name: tusk
           image: tusk
           env:
+            - name: TUSK_PORT
+              value: "8080"
             - name: DATABASE_URL
               value: "postgres://postgres:postgres@postgresql-ratt-api:5432/ratt-api?sslmode=disable"
             # - name: FLASK_PORT
@@ -78,4 +82,18 @@ spec:
           #     path: /healthcheck
           #     port: 8081
       terminationGracePeriodSeconds: 300
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tusk
+  labels:
+    app: tusk
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: tusk
 

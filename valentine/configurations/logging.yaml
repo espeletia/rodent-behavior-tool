@@ -1,0 +1,7 @@
+EnableDebugLogger: true
+EnableFileLogger: true
+FileLogLevel: info
+FileLogOutputs: "logs.log"
+LoggerConfig:
+  Development: true
+  SamplingEnable: false
