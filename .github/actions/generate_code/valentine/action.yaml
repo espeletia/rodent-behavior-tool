@@ -14,7 +14,7 @@ runs:
 
     - name: Install go-templ
       shell: bash
-      run: cd go install github.com/a-h/templ/cmd/templ@latest
+      run: go install github.com/a-h/templ/cmd/templ@latest
 
     - name: Generate Valentine files
       working-directory: ./valentine
