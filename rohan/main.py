@@ -131,7 +131,7 @@ if __name__ == "__main__":
                 print(f"Lux (calculated): {lux}")
                 send_cage_message(
                     secret_token,
-                    light,
+                    lux,
                     foodDistance,
                     waterDistance,
                     1,
