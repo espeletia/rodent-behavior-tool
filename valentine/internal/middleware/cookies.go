@@ -47,12 +47,10 @@ func Authentication() mux.MiddlewareFunc {
 func GetAuthToken(r *http.Request) (*string, error) {
 	cookie, err := r.Cookie("auth_token")
 	if err != nil {
-		if err == http.ErrNoCookie {
+		if errors.Is(err, http.ErrNoCookie) {
 			return nil, domain.TokenNotFound
 		}
 		return nil, err
 	}
 	return &cookie.Value, nil
 }
-
-//palma-protect-jacob-status-clean-272

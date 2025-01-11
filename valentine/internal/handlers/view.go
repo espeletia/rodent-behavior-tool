@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"time"
+	"valentine/internal/domain"
 	"valentine/internal/usecases"
 	"valentine/view"
 )
@@ -69,15 +70,4 @@ func (vh *ViewHandler) HandleLoginForm(w http.ResponseWriter, r *http.Request) e
 	})
 	http.Redirect(w, r, "/app", http.StatusSeeOther)
 	return nil
-}
-
-func GetAuthToken(r *http.Request) (string, error) {
-	cookie, err := r.Cookie("auth_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return "", errors.New("no auth token found")
-		}
-		return "", err
-	}
-	return cookie.Value, nil
 }

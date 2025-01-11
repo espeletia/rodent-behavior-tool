@@ -3,6 +3,7 @@ module valentine
 go 1.23.1
 
 require (
+	github.com/a-h/templ v0.2.793
 	github.com/gorilla/mux v1.8.1
 	github.com/nextap-solutions/goNextService v0.1.4
 	github.com/rs/cors v1.11.1
@@ -11,7 +12,6 @@ require (
 )
 
 require (
-	github.com/a-h/templ v0.2.793 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
