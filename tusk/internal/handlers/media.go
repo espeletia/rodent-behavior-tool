@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"ghiaccio/models"
 	"net/http"
 	"os"
 	"path/filepath"
 	"tusk/internal/domain"
-	"tusk/internal/handlers/models"
 	"tusk/internal/ports"
 	"tusk/internal/util"
 
@@ -36,7 +36,7 @@ func NewMediaHandler(mediaUsecase *usecases.MediaUsecase) *MediaHandler {
 }
 
 var UploadOp = openapi3Struct.Path{
-	Path: "/upload",
+	Path: "/v1/upload",
 	Item: openapi3.PathItem{
 		Put: &openapi3.Operation{
 			Tags:        []string{"Media"},

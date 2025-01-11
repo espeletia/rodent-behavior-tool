@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"ghiaccio/models"
 	"net/http"
 	"tusk/internal/domain"
-	"tusk/internal/handlers/models"
 	"tusk/internal/usecases"
 	"tusk/internal/util"
 
@@ -54,7 +54,7 @@ func (ph *UserHandler) Ping(w http.ResponseWriter, r *http.Request) error {
 }
 
 var MeOp = openapi3Struct.Path{
-	Path: "/me",
+	Path: "/v1/me",
 	Item: openapi3.PathItem{
 		Get: &openapi3.Operation{
 			Tags:        []string{"Users"},
@@ -92,7 +92,7 @@ func (uu *UserHandler) Me(w http.ResponseWriter, r *http.Request) error {
 }
 
 var LoginOp = openapi3Struct.Path{
-	Path: "/login",
+	Path: "/v1/login",
 	Item: openapi3.PathItem{
 		Post: &openapi3.Operation{
 			Tags:        []string{"Users"},
@@ -152,7 +152,7 @@ func (uu *UserHandler) Login(w http.ResponseWriter, r *http.Request) error {
 }
 
 var CreateUserOp = openapi3Struct.Path{
-	Path: "/register",
+	Path: "/v1/register",
 	Item: openapi3.PathItem{
 		Put: &openapi3.Operation{
 			Tags:        []string{"Users"},

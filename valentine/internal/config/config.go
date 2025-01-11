@@ -8,12 +8,14 @@ import (
 type Config struct {
 	CommonConfig commonConfig.Config
 	ServerConfig commonConfig.ServerConfig
+	TuskConfig   TuskConfig
 }
 
 func LoadConfig() *Config {
 	return &Config{
 		CommonConfig: commonConfig.LoadConfig("VALENTINE"),
 		ServerConfig: commonConfig.LoadServerConfig("VALENTINE"),
+		TuskConfig:   loadTuskConfig(),
 	}
 }
 
