@@ -1,0 +1,21 @@
+name: Generate Valentine service files
+description: Generate Valentine service files
+branding:
+  icon: 'upload-cloud'
+  color: 'red'
+
+runs:
+  using: composite
+  steps:
+    - name: Install go deps
+      shell: bash
+      run: |
+        cd valentine && go mod tidy
+
+    - name: Generate Valentine files
+      working-directory: ./valentine
+      shell: bash
+      run: |
+        go generate ./cmd/main.go
+
+
