@@ -131,9 +131,9 @@ if __name__ == "__main__":
                 print(f"Lux (calculated): {lux}")
                 send_cage_message(
                     secret_token,
-                    lux,
-                    foodDistance,
-                    waterDistance,
+                    int(lux),
+                    int(foodDistance),
+                    int(waterDistance),
                     1,
                     current_timestamp,
                     video_upload_response.get('upload_url')
