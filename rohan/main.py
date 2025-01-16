@@ -37,7 +37,7 @@ def init_cage():
             return config.get('activation_code'), config.get('secret_token')
 
     try:
-        response = requests.post(API_URL + "/cages")
+        response = requests.post(API_URL + "/v1/cages")
         response.raise_for_status()
         if 'application/json' in response.headers.get('Content-Type', ''):
             response_json = response.json()
