@@ -9,6 +9,7 @@ def capture_video(duration=10, output_file='/home/pi/video.mp4'):
         command = [
             'libcamera-vid',
             '-t', str(duration * 1000),
+            '-width', '1920', '--height', '1080',
             '--codec', 'h264',
             '--output', output_file
         ]
