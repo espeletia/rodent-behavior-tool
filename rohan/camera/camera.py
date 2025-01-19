@@ -6,10 +6,12 @@ import os
 
 def capture_video(duration=10, output_file='/home/pi/video.mp4'):
     try:
+        # libcamera-vid -t 10000 --width 1920 --height 1080 -o video.mp4
         command = [
             'libcamera-vid',
             '-t', str(duration * 1000),
-            '--codec', 'h264',
+            '--width', '1920',
+            '--height', '1080',
             '--output', output_file
         ]
         subprocess.run(command, check=True)
