@@ -90,6 +90,9 @@ func (vh *ViewHandler) HandleRegisterForm(w http.ResponseWriter, r *http.Request
 		DisplayName: displayName,
 		Password:    password,
 	})
+	if err != nil {
+		return err
+	}
 
 	zap.L().Info("data",
 		zap.String("username", username),
