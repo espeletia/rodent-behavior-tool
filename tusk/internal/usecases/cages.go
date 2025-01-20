@@ -9,6 +9,7 @@ import (
 	"tusk/internal/middleware"
 	"tusk/internal/ports"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -26,6 +27,23 @@ func NewCagesUsecase(cageDatabaseStore ports.CagesDatabaseStore, activationCodeL
 		activationCodeLength: activationCodeLength,
 		secretTokenLength:    secretTokenLength,
 	}
+}
+
+func (cu *CagesUsecase) GetCageMessages(ctx context.Context, cageId uuid.UUID, offset domain.OffsetLimit) (*domain.CageMessasgesCursored, error) {
+	usr, ok := middleware.GetUser(ctx)
+	if !ok {
+		return nil, domain.Unauthorized
+	}
+	_, err := cu.cageDatabaseStore.GetCageById(ctx, cageId, usr.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	messages, err := cu.cageDatabaseStore.FetchCageMessages(ctx, cageId, offset)
+	if err != nil {
+		return nil, err
+	}
+	return messages, nil
 }
 
 func (cu *CagesUsecase) CreateNewCage(ctx context.Context) (string, string, error) {

@@ -11,6 +11,7 @@ import (
 	"tusk/internal/util"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/nextap-solutions/openapi3Struct"
 )
@@ -239,6 +240,88 @@ func (ch *CagesHandler) ProcessMessage(w http.ResponseWriter, r *http.Request) e
 	return nil
 }
 
+var GetCageMessagesOp = openapi3Struct.Path{
+	Path: "/v1/cages/{id}/messages",
+	Item: openapi3.PathItem{
+		Get: &openapi3.Operation{
+			Tags:        []string{"Cages"},
+			OperationID: "getCageMessages",
+			Description: "fetch cage messages with cursor",
+			Parameters: openapi3.Parameters{
+				{
+					Value: &openapi3.Parameter{
+						Name:        "id",
+						In:          "path",
+						Description: "cage id",
+						Required:    true,
+						Schema:      openapi3.NewSchemaRef("#/components/schemas/ID", nil),
+					},
+				},
+
+				{
+					Ref: "#/components/parameters/beforeQuery",
+				},
+				{
+					Ref: "#/components/parameters/afterQuery",
+				},
+				{
+					Ref: "#/components/parameters/limitQuery",
+				},
+			},
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("Cage messages response"),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: openapi3.NewSchemaRef("#/components/schemas/CageMessagesCursored", nil),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
+func (ch *CagesHandler) FetchMessages(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	id := mux.Vars(r)["id"]
+
+	parsedId, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
+	offsetlimit := defaultOffsetLimit()
+	cursor, err := getCursorFromRequest(r)
+	if err == nil {
+		offsetlimit, err = mapCursorInput(ctx, cursor)
+		if err != nil {
+			return err
+		}
+	}
+	data, err := ch.cagesUsecase.GetCageMessages(ctx, parsedId, *offsetlimit)
+	if err != nil {
+		return err
+	}
+	result := []models.CageMessage{}
+	for _, message := range data.Data {
+		result = append(result, mapCageMessageToModels(message))
+	}
+	messagesCursored := models.CageMessagesCursored{
+		Data:   result,
+		Cursor: models.Cursor(data.Cursor),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(messagesCursored)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func mapCageMessageToDomain(message models.CageMessageRequest) domain.CageMessageData {
 	timestamp := time.Unix(message.Timestamp, 0)
 	return domain.CageMessageData{
@@ -250,6 +333,21 @@ func mapCageMessageToDomain(message models.CageMessageRequest) domain.CageMessag
 		Humidity:  message.Humidity,
 		VideoUrl:  message.VideoUrl,
 		Timestamp: timestamp,
+	}
+}
+
+func mapCageMessageToModels(message domain.CageMessage) models.CageMessage {
+	cageId := message.CageID.String()
+	return models.CageMessage{
+		CageID:    cageId,
+		Revision:  message.Revision,
+		Water:     message.Water,
+		Food:      message.Food,
+		Light:     message.Light,
+		Temp:      message.Temp,
+		Humidity:  message.Humidity,
+		VideoUrl:  message.VideoUrl,
+		Timestamp: message.Timestamp.Unix(),
 	}
 }
 

@@ -29,7 +29,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"flex items-center justify-between px-44 py-3 bg-gray-800 text-white font-nunito\"><h1 class=\"text-2xl font-bold\"><a href=\"/\">RATT</a></h1><div class=\"flex items-center space-x-8\"><nav><ul class=\"flex space-x-6\"><li class=\"hover:text-gray-400\"><a href=\"#\">Blog</a></li><li class=\"hover:text-gray-400\"><a href=\"#\">Pricing</a></li><li class=\"hover:text-gray-400\"><a href=\"#\">About</a></li></ul></nav><a href=\"/login\"><button type=\"button\" class=\"px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2\">Go to app</button></a></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"flex items-center justify-between px-44 py-3 bg-gray-800 text-white font-nunito\"><h1 class=\"text-2xl font-bold\"><a href=\"/\">RATT</a></h1><div class=\"flex items-center space-x-8\"><nav><ul class=\"flex space-x-6\"><li class=\"hover:text-gray-400\"><a href=\"#\">Blog</a></li><li class=\"hover:text-gray-400\"><a href=\"#\">Pricing</a></li><li class=\"hover:text-gray-400\"><a href=\"/about\">About</a></li></ul></nav><a href=\"/login\"><button type=\"button\" class=\"px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2\">Go to app</button></a></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

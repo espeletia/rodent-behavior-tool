@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"ghiaccio/models"
 	"net/http"
 	"time"
 	"valentine/internal/usecases"
 	"valentine/view"
+
+	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 type ViewHandler struct {
@@ -42,8 +46,60 @@ func (vh *ViewHandler) App(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func (vh *ViewHandler) CageView(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	id := mux.Vars(r)["id"]
+	cageMessages, err := vh.cageUsecase.GetCageMessages(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	view.CageView(*cageMessages).Render(ctx, w)
+	return nil
+}
+
 func (vh *ViewHandler) Login(w http.ResponseWriter, r *http.Request) error {
 	view.LoginView().Render(r.Context(), w)
+	return nil
+}
+
+func (vh *ViewHandler) About(w http.ResponseWriter, r *http.Request) error {
+	view.AboutView().Render(r.Context(), w)
+	return nil
+}
+
+func (vh *ViewHandler) Register(w http.ResponseWriter, r *http.Request) error {
+	view.RegisterView().Render(r.Context(), w)
+	return nil
+}
+
+func (vh *ViewHandler) HandleRegisterForm(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+	email := r.Form.Get("email")
+	username := r.Form.Get("username")
+	displayName := r.Form.Get("display_name")
+	password := r.Form.Get("password")
+
+	err = vh.userUsecase.Register(ctx, models.UserData{
+		Email:       email,
+		Username:    username,
+		DisplayName: displayName,
+		Password:    password,
+	})
+	if err != nil {
+		return err
+	}
+
+	zap.L().Info("data",
+		zap.String("username", username),
+		zap.String("password", password),
+		zap.String("display_name", displayName),
+		zap.String("email", email))
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 	return nil
 }
 

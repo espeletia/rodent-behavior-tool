@@ -115,6 +115,24 @@ func (cdbs *CagesDatabaseStore) GetCagesByUserId(ctx context.Context, userId uui
 	return result, nil
 }
 
+func (cdbs *CagesDatabaseStore) GetCageById(ctx context.Context, cageId, userId uuid.UUID) (*domain.Cage, error) {
+	dest := []model.RodentCages{}
+
+	selectStmt := table.RodentCages.SELECT(table.RodentCages.AllColumns).WHERE(table.RodentCages.UserID.EQ(postgres.UUID(userId)).AND(table.RodentCages.ID.EQ(postgres.UUID(cageId))))
+	err := selectStmt.QueryContext(ctx, cdbs.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(dest) != 1 {
+		return nil, domain.CageNotFound
+	}
+
+	mappedCage := mapCageToDomain(dest[0])
+	return &mappedCage, nil
+
+}
+
 func (cdbs *CagesDatabaseStore) InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageID uuid.UUID) error {
 	insertModel := model.CageMessages{
 		CageID:   cageID,
@@ -148,6 +166,44 @@ func (cdbs *CagesDatabaseStore) InsertNewCageMessage(ctx context.Context, cageMe
 	}
 
 	return nil
+}
+
+func (cdbs *CagesDatabaseStore) FetchCageMessages(ctx context.Context, cageId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.CageMessasgesCursored, error) {
+	stmt := table.CageMessages.SELECT(table.CageMessages.AllColumns).
+		WHERE(table.CageMessages.CageID.EQ(postgres.UUID(cageId))).
+		ORDER_BY(table.CageMessages.TimeSent.DESC()).
+		OFFSET(offsetLimit.Offset).
+		LIMIT(int64(offsetLimit.Limit))
+
+	dest := []model.CageMessages{}
+
+	err := stmt.QueryContext(ctx, cdbs.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	data := []domain.CageMessage{}
+	for _, message := range dest {
+		data = append(data, mapCageMessageToDomain(message))
+	}
+	return &domain.CageMessasgesCursored{
+		Data:   data,
+		Cursor: util.BuildCursorWithOffsetCursor(data, offsetLimit.Offset, offsetLimit.Limit),
+	}, nil
+}
+
+func mapCageMessageToDomain(message model.CageMessages) domain.CageMessage {
+	return domain.CageMessage{
+		CageID:    message.CageID,
+		Revision:  int64(message.Revision),
+		Water:     int64(message.Water),
+		Food:      int64(message.Food),
+		Light:     int64(message.Light),
+		Temp:      int64(message.Temp),
+		Humidity:  int64(message.Humidity),
+		VideoUrl:  message.VideoURL,
+		VideoID:   message.VideoID,
+		Timestamp: message.TimeSent,
+	}
 }
 
 func mapCageToDomain(cage model.RodentCages) domain.Cage {
