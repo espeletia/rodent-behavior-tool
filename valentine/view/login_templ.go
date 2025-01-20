@@ -29,7 +29,36 @@ func LoginView() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<html><head><title>Ratt - Login</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n            @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&display=swap');\n\n            body, html {\n                min-height: 100vh;\n                margin: 0;\n                overflow-x: hidden;\n                font-family: 'Nunito', sans-serif;\n                box-sizing: border-box;\n            }\n            </style></head><body class=\"bg-slate-950 text-slate-50 flex items-center justify-center min-h-screen\"><form action=\"/login\" method=\"POST\" class=\"bg-slate-800 p-8 rounded-lg shadow-lg w-80\"><h1 class=\"text-2xl font-bold mb-6 text-center\">Login</h1><label for=\"username\" class=\"block mb-2 text-sm font-medium\">Email</label> <input type=\"text\" name=\"username\" required class=\"w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <label for=\"password\" class=\"block mb-2 text-sm font-medium\">Password</label> <input type=\"password\" name=\"password\" required class=\"w-full px-4 py-2 mb-6 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <button type=\"submit\" class=\"w-full bg-blue-600 py-2 rounded-lg hover:bg-blue-700 font-bold\">Login</button></form></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<html><head><title>Ratt - Login</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n            @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&display=swap');\n\n            body, html {\n                min-height: 100vh;\n                margin: 0;\n                overflow-x: hidden;\n                font-family: 'Nunito', sans-serif;\n                box-sizing: border-box;\n            }\n            </style></head><body class=\"bg-slate-950 text-slate-50 flex items-center justify-center min-h-screen\"><form action=\"/login\" method=\"POST\" class=\"bg-slate-800 p-8 rounded-lg shadow-lg w-80\"><h1 class=\"text-2xl font-bold mb-6 text-center\">Login</h1><label for=\"username\" class=\"block mb-2 text-sm font-medium\">Email</label> <input type=\"text\" name=\"username\" required class=\"w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <label for=\"password\" class=\"block mb-2 text-sm font-medium\">Password</label> <input type=\"password\" name=\"password\" required class=\"w-full px-4 py-2 mb-6 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <button type=\"submit\" class=\"w-full bg-blue-600 py-2 rounded-lg hover:bg-blue-700 font-bold\">Login</button> <a href=\"/register\" class=\"block text-center mt-4 text-sm text-blue-400 hover:underline\">Don't have an account? Register here.</a></form></body></html>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func RegisterView() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<html><head><title>Ratt - Register</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n                @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&display=swap');\n\n                body, html {\n                    min-height: 100vh;\n                    margin: 0;\n                    overflow-x: hidden;\n                    font-family: 'Nunito', sans-serif;\n                    box-sizing: border-box;\n                }\n            </style><script>\n                function validateForm(event) {\n                    const email = document.querySelector('input[name=\"email\"]').value;\n                    const password = document.querySelector('input[name=\"password\"]').value;\n                    const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n                    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/;\n\n                    if (!emailPattern.test(email)) {\n                        alert('Please enter a valid email address.');\n                        event.preventDefault();\n                        return false;\n                    }\n\n                    if (!passwordPattern.test(password)) {\n                        alert('Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character.');\n                        event.preventDefault();\n                        return false;\n                    }\n                    return true;\n                }\n            </script></head><body class=\"bg-slate-950 text-slate-50 flex items-center justify-center min-h-screen\"><form action=\"/register\" method=\"POST\" class=\"bg-slate-800 p-8 rounded-lg shadow-lg w-80\" onsubmit=\"return validateForm(event)\"><h1 class=\"text-2xl font-bold mb-6 text-center\">Register</h1><label for=\"display_name\" class=\"block mb-2 text-sm font-medium\">Display Name</label> <input type=\"text\" name=\"display_name\" required class=\"w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <label for=\"username\" class=\"block mb-2 text-sm font-medium\">Username</label> <input type=\"text\" name=\"username\" required class=\"w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <label for=\"email\" class=\"block mb-2 text-sm font-medium\">Email</label> <input type=\"text\" name=\"email\" required class=\"w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <label for=\"password\" class=\"block mb-2 text-sm font-medium\">Password</label> <input type=\"password\" name=\"password\" required class=\"w-full px-4 py-2 mb-6 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500\"> <button type=\"submit\" class=\"w-full bg-blue-600 py-2 rounded-lg hover:bg-blue-700 font-bold\">Register</button> <a href=\"/login\" class=\"block text-center mt-4 text-sm text-blue-400 hover:underline\">Already have an account? Login here.</a></form></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

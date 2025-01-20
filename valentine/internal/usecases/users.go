@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	commonDomain "ghiaccio/domain"
 	"ghiaccio/models"
 	"net/http"
 	"valentine/internal/domain"
 	"valentine/internal/middleware"
+
+	"go.uber.org/zap"
 )
 
 type UserUsecase struct {
@@ -35,6 +38,15 @@ func (uu *UserUsecase) Login(ctx context.Context, email, password string) (*stri
 		return nil, err
 	}
 	defer tokenResp.Body.Close()
+	if tokenResp.StatusCode != http.StatusOK {
+		parsedErr := commonDomain.Error{}
+		err = json.NewDecoder(tokenResp.Body).Decode(&parsedErr)
+		if err != nil {
+			return nil, err
+		}
+		zap.L().Info("ERROR", zap.Any("error", parsedErr), zap.Int("status", tokenResp.StatusCode))
+		return nil, domain.TokenNotFound
+	}
 
 	resultToken := models.LoginResp{}
 	err = json.NewDecoder(tokenResp.Body).Decode(&resultToken)
@@ -70,4 +82,18 @@ func (uu *UserUsecase) Me(ctx context.Context) (*models.User, error) {
 	}
 
 	return &usr, nil
+}
+
+func (uu *UserUsecase) Register(ctx context.Context, userData models.UserData) error {
+	jsonData, err := json.Marshal(userData)
+	if err != nil {
+		return err
+	}
+
+	jsonReader := bytes.NewReader(jsonData)
+	_, err = GenericFetch[any](ctx, uu.apiUrl+"/v1/register", "PUT", jsonReader)
+	if err != nil {
+		return err
+	}
+	return nil
 }

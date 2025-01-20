@@ -25,6 +25,63 @@ templ LoginView() {
 				<label for="password" class="block mb-2 text-sm font-medium">Password</label>
 				<input type="password" name="password" required class="w-full px-4 py-2 mb-6 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
 				<button type="submit" class="w-full bg-blue-600 py-2 rounded-lg hover:bg-blue-700 font-bold">Login</button>
+				<a href="/register" class="block text-center mt-4 text-sm text-blue-400 hover:underline">Don't have an account? Register here.</a>
+			</form>
+		</body>
+	</html>
+}
+
+templ RegisterView() {
+	<html>
+		<head>
+			<title>Ratt - Register</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+                @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&display=swap');
+
+                body, html {
+                    min-height: 100vh;
+                    margin: 0;
+                    overflow-x: hidden;
+                    font-family: 'Nunito', sans-serif;
+                    box-sizing: border-box;
+                }
+            </style>
+			<script>
+                function validateForm(event) {
+                    const email = document.querySelector('input[name="email"]').value;
+                    const password = document.querySelector('input[name="password"]').value;
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+                    if (!emailPattern.test(email)) {
+                        alert('Please enter a valid email address.');
+                        event.preventDefault();
+                        return false;
+                    }
+
+                    if (!passwordPattern.test(password)) {
+                        alert('Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character.');
+                        event.preventDefault();
+                        return false;
+                    }
+                    return true;
+                }
+            </script>
+		</head>
+		<body class="bg-slate-950 text-slate-50 flex items-center justify-center min-h-screen">
+			<form action="/register" method="POST" class="bg-slate-800 p-8 rounded-lg shadow-lg w-80" onsubmit="return validateForm(event)">
+				<h1 class="text-2xl font-bold mb-6 text-center">Register</h1>
+				<label for="display_name" class="block mb-2 text-sm font-medium">Display Name</label>
+				<input type="text" name="display_name" required class="w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+				<label for="username" class="block mb-2 text-sm font-medium">Username</label>
+				<input type="text" name="username" required class="w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+				<label for="email" class="block mb-2 text-sm font-medium">Email</label>
+				<input type="text" name="email" required class="w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+				<label for="password" class="block mb-2 text-sm font-medium">Password</label>
+				<input type="password" name="password" required class="w-full px-4 py-2 mb-6 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+				<button type="submit" class="w-full bg-blue-600 py-2 rounded-lg hover:bg-blue-700 font-bold">Register</button>
+				<a href="/login" class="block text-center mt-4 text-sm text-blue-400 hover:underline">Already have an account? Login here.</a>
 			</form>
 		</body>
 	</html>

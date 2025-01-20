@@ -36,6 +36,8 @@ type CagesDatabaseStore interface {
 	GetCagesByUserId(ctx context.Context, userId uuid.UUID) ([]domain.Cage, error)
 	GetCageBySecretToken(ctx context.Context, secretToken string) (*domain.Cage, error)
 	InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageId uuid.UUID) error
+	GetCageById(ctx context.Context, cageId, userId uuid.UUID) (*domain.Cage, error)
+	FetchCageMessages(ctx context.Context, cageId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.CageMessasgesCursored, error)
 }
 
 type QueueHandler interface {

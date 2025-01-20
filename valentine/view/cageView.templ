@@ -1,0 +1,69 @@
+package view
+
+import (
+	"ghiaccio/models"
+	"strconv"
+	"time"
+)
+
+templ CageView(messages models.CageMessagesCursored) {
+	<html>
+		<head>
+			<title>Ratt</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+            @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&display=swap');
+
+body, html {
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+    font-family: 'Nunito', sans-serif;
+    border-sizing: border-box;
+}
+            </style>
+		</head>
+		<body class="bg-slate-950 text-slate-50">
+			@Header()
+			@CageMessagesTable(messages)
+		</body>
+	</html>
+}
+
+templ CageMessagesTable(messages models.CageMessagesCursored) {
+	{ strconv.Itoa(len(messages.Data)) }
+	<table class="table-auto w-full border-collapse border border-slate-400">
+		<thead>
+			<tr>
+				<th class="border border-slate-300">Revision</th>
+				<th class="border border-slate-300">Water</th>
+				<th class="border border-slate-300">Food</th>
+				<th class="border border-slate-300">Light</th>
+				<th class="border border-slate-300">Temperature</th>
+				<th class="border border-slate-300">Humidity</th>
+				<th class="border border-slate-300">Timestamp</th>
+				<th class="border border-slate-300">Video URL</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, message := range messages.Data {
+				<tr>
+					<td class="border border-slate-300">{ strconv.FormatInt(message.Revision, 10) }</td>
+					<td class="border border-slate-300">{ strconv.FormatInt(message.Water, 10) }</td>
+					<td class="border border-slate-300">{ strconv.FormatInt(message.Food, 10) }</td>
+					<td class="border border-slate-300">{ strconv.FormatInt(message.Light, 10) }</td>
+					<td class="border border-slate-300">{ strconv.FormatInt(message.Temp, 10) }</td>
+					<td class="border border-slate-300">{ strconv.FormatInt(message.Humidity, 10) }</td>
+					<td class="border border-slate-300">{ time.Unix(message.Timestamp, 0).Format("2006-01-02 15:04:05") }</td>
+					<td class="border border-slate-300">
+						if message.VideoUrl != nil {
+							<a href={ templ.SafeURL(*message.VideoUrl) }>Video</a>
+						} else {
+							N/A
+						}
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}

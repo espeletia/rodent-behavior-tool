@@ -90,7 +90,7 @@ var GetVideoByIDOp = openapi3Struct.Path{
 					Value: &openapi3.Parameter{
 						Name:        "id",
 						In:          "path",
-						Description: "Comment id",
+						Description: "video id",
 						Required:    true,
 						Schema:      openapi3.NewSchemaRef("#/components/schemas/ID", nil),
 					},

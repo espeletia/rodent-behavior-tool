@@ -14,6 +14,11 @@ type Cage struct {
 	Register    time.Time
 }
 
+type CageMessasgesCursored struct {
+	Data   []CageMessage
+	Cursor Cursor
+}
+
 type CageMessage struct {
 	CageID    uuid.UUID
 	Revision  int64
@@ -23,7 +28,7 @@ type CageMessage struct {
 	Temp      int64
 	Humidity  int64
 	VideoUrl  *string
-	VideoID   *int64
+	VideoID   *uuid.UUID
 	Timestamp time.Time
 }
 

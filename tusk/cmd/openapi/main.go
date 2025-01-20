@@ -102,6 +102,7 @@ func main() {
 	p.AddPath(handlers.UserGetCagesOp)
 	p.AddPath(handlers.CageGetSelfOp)
 	p.AddPath(handlers.CageSendMessageOp)
+	p.AddPath(handlers.GetCageMessagesOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {
