@@ -103,6 +103,7 @@ func main() {
 	p.AddPath(handlers.CageGetSelfOp)
 	p.AddPath(handlers.CageSendMessageOp)
 	p.AddPath(handlers.GetCageMessagesOp)
+	p.AddPath(handlers.GetVideosCursoredOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {

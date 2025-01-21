@@ -16,3 +16,9 @@ type VideoAnalysis struct {
 	Name          string     `json:"name"`
 	AnalysedVideo *MediaFile `json:"analysed_video,omitempty"`
 }
+
+// swagger:model
+type CursoredVideoAnalysis struct {
+	Data   []VideoAnalysis `json:"data"`
+	Cursor Cursor          `json:"cursor"`
+}

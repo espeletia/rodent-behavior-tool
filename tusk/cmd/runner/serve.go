@@ -113,6 +113,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	// videos
 	router.Handle("/video", commonHandler.Handle(videoHandler.CreateVideoAnalysis)).Methods("PUT")
 	router.Handle("/video/{id}", commonHandler.Handle(videoHandler.GetVideoAnalysisByID)).Methods("GET")
+	router.Handle("/videos", commonHandler.Handle(videoHandler.GetVideosCursored)).Methods("GET")
 
 	// cages
 	router.Handle("/cages", commonHandler.Handle(cagesHandler.CreateCage)).Methods("POST")

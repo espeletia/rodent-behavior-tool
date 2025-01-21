@@ -111,6 +111,40 @@ func (vdbs *VideoDatabaseStore) GetByID(ctx context.Context, id uuid.UUID) (*dom
 	return validateAndMapVideoAnalysis(dest[0]), nil
 }
 
+func (vdbs *VideoDatabaseStore) GetVideosCursored(ctx context.Context, userId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.VideosCursored, error) {
+	selectStmt := table.VideoAnalysis.SELECT(
+		table.VideoAnalysis.AllColumns,
+		table.Media.AllColumns,
+	).FROM(
+		table.VideoAnalysis.LEFT_JOIN(
+			table.Media, postgres.OR(
+				table.Media.ID.EQ(table.VideoAnalysis.MediaID),
+				table.Media.ID.EQ(table.VideoAnalysis.AnalysedVideo),
+			),
+		)).WHERE(
+		table.VideoAnalysis.OwnerID.EQ(postgres.UUID(userId)),
+	).GROUP_BY(
+		table.VideoAnalysis.ID,
+		table.Media.ID,
+	).LIMIT(int64(offsetLimit.Limit)).OFFSET(offsetLimit.Offset)
+
+	dest := []video{}
+
+	err := selectStmt.QueryContext(ctx, vdbs.DB, &dest)
+	if err != nil {
+		return nil, err
+	}
+	data := []domain.Video{}
+	for _, video := range dest {
+		data = append(data, *validateAndMapVideoAnalysis(video))
+	}
+	return &domain.VideosCursored{
+		Data:   data,
+		Cursor: util.BuildCursorWithOffsetCursor(data, offsetLimit.Offset, offsetLimit.Limit),
+	}, nil
+
+}
+
 func MapVideoToDB(video domain.Video) model.VideoAnalysis {
 	return model.VideoAnalysis{
 		ID:          video.ID,

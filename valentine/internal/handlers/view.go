@@ -12,16 +12,18 @@ import (
 )
 
 type ViewHandler struct {
-	client      http.Client
-	userUsecase *usecases.UserUsecase
-	cageUsecase *usecases.CageUsecase
+	client       http.Client
+	userUsecase  *usecases.UserUsecase
+	cageUsecase  *usecases.CageUsecase
+	videoUsecase *usecases.VideoUsecase
 }
 
-func NewViewHandler(users *usecases.UserUsecase, cages *usecases.CageUsecase) *ViewHandler {
+func NewViewHandler(users *usecases.UserUsecase, cages *usecases.CageUsecase, video *usecases.VideoUsecase) *ViewHandler {
 	return &ViewHandler{
-		client:      http.Client{},
-		userUsecase: users,
-		cageUsecase: cages,
+		client:       http.Client{},
+		userUsecase:  users,
+		cageUsecase:  cages,
+		videoUsecase: video,
 	}
 }
 
@@ -42,7 +44,11 @@ func (vh *ViewHandler) App(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	view.AppView(*usr, cages).Render(r.Context(), w)
+	videos, err := vh.videoUsecase.GetVideos(ctx)
+	if err != nil {
+		return err
+	}
+	view.AppView(*usr, cages, videos.Data).Render(r.Context(), w)
 	return nil
 }
 
@@ -84,6 +90,11 @@ func (vh *ViewHandler) HandleRegisterForm(w http.ResponseWriter, r *http.Request
 	displayName := r.Form.Get("display_name")
 	password := r.Form.Get("password")
 
+	zap.L().Info("data",
+		zap.String("username", username),
+		zap.String("password", password),
+		zap.String("display_name", displayName),
+		zap.String("email", email))
 	err = vh.userUsecase.Register(ctx, models.UserData{
 		Email:       email,
 		Username:    username,
@@ -94,11 +105,6 @@ func (vh *ViewHandler) HandleRegisterForm(w http.ResponseWriter, r *http.Request
 		return err
 	}
 
-	zap.L().Info("data",
-		zap.String("username", username),
-		zap.String("password", password),
-		zap.String("display_name", displayName),
-		zap.String("email", email))
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 	return nil
 }
@@ -110,6 +116,7 @@ func (vh *ViewHandler) HandleLoginForm(w http.ResponseWriter, r *http.Request) e
 	}
 	email := r.Form.Get("username")
 	password := r.Form.Get("password")
+	zap.L().Info("Parsing form")
 	token, err := vh.userUsecase.Login(r.Context(), email, password)
 	if err != nil {
 		return err
