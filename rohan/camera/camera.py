@@ -6,7 +6,7 @@ import os
 
 def capture_video(duration=10, output_file='/home/pi/video.mp4'):
     try:
-        # libcamera-vid -t 10000 --width 1920 --height 1080 -o video.mp4
+        # libcamera-vid -t 10000 --autofocus-mode continuous --width 1920 --height 1080 -o video.mp4
         command = [
             'libcamera-vid',
             '-t', str(duration * 1000),
