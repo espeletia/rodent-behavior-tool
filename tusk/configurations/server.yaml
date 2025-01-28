@@ -4,6 +4,6 @@ DebugEnable: true
 TLSEnable: false
 TLSCertPath: ./certs/localhost.crt
 TLSKeyPath: ./certs/localhost.key
-WriteTimeout: 5s
-ReadTimeout: 5s
-ShutdownTimeout: 5s
+WriteTimeout: 60s
+ReadTimeout: 60s
+ShutdownTimeout: 60s

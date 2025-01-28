@@ -48,7 +48,9 @@ class FileManager:
         try:
             # Upload the file to the specified bucket and key
             self.client.upload_file(src, self.bucket, key, ExtraArgs={
-                                    'ContentType': 'video/mp4'})
+                                    'ContentType': 'video/mp4',
+                                    'ACL': 'public-read',
+                                    })
             print(
                 f"File '{src}' uploaded to bucket '{self.bucket}' with key '{key}'.")
             os.remove(src)

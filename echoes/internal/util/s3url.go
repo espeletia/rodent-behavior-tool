@@ -22,10 +22,11 @@ var (
 	ErrInvalidS3Endpoint = errors.New("an invalid S3 endpoint URL")
 
 	// Pattern used to parse multiple path and host style S3 endpoint URLs.
-	s3URLPattern        = regexp.MustCompile(`^(.+\.)?s3[.-](?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)\.`)
-	minioURLPattern     = regexp.MustCompile(`^(.+\.)?minio[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
-	localhostURLPattern = regexp.MustCompile(`^(.+\.)?localhost[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
-	ipURLPattern        = regexp.MustCompile(`^(.+\.)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
+	s3URLPattern          = regexp.MustCompile(`^(.+\.)?s3[.-](?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)\.`)
+	minioURLPattern       = regexp.MustCompile(`^(.+\.)?minio[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
+	digitalOceanURLPatter = regexp.MustCompile(`^(.+\.)?digitaloceanspaces[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
+	localhostURLPattern   = regexp.MustCompile(`^(.+\.)?localhost[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
+	ipURLPattern          = regexp.MustCompile(`^(.+\.)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[.-]?(?:(accelerated|dualstack|website)[.-])?([a-z0-9-]+)?\.?`)
 )
 
 type S3URIOpt func(*S3URI)
@@ -192,21 +193,28 @@ func parse(s3u *S3URI, s interface{}) (*S3URI, error) {
 
 	matches := s3URLPattern.FindStringSubmatch(u.Host)
 	if matches == nil || len(matches) < 1 {
-		matches = minioURLPattern.FindStringSubmatch(u.Host)
+		matches := digitalOceanURLPatter.FindStringSubmatch(u.Host)
 		if matches == nil || len(matches) < 1 {
-			matches = localhostURLPattern.FindStringSubmatch(u.Host)
+			matches = minioURLPattern.FindStringSubmatch(u.Host)
 			if matches == nil || len(matches) < 1 {
-				matches = ipURLPattern.FindStringSubmatch(u.Host)
+				matches = localhostURLPattern.FindStringSubmatch(u.Host)
 				if matches == nil || len(matches) < 1 {
-					return nil, ErrInvalidS3Endpoint
+					matches = ipURLPattern.FindStringSubmatch(u.Host)
+					if matches == nil || len(matches) < 1 {
+						return nil, ErrInvalidS3Endpoint
+					}
 				}
 			}
 		}
 	}
 
-	prefix := matches[1]
-	usage := matches[2] // Type of the S3 bucket.
-	region := matches[3]
+	// prefix := matches[1]
+	// usage := matches[2] // Type of the S3 bucket.
+	// region := matches[3]
+
+	prefix := ""
+	usage := "" // Type of the S3 bucket.
+	region := ""
 
 	if prefix == "" {
 		s3u.PathStyle = Bool(true)

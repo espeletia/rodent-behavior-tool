@@ -2,6 +2,7 @@ import requests
 import time
 import json
 import os
+import asyncio
 
 from lcd.lcd import SmallDisplay
 from configuration.config import API_URL, DURATION, CONFIG_FILE
@@ -28,6 +29,30 @@ def make_request(url, method='GET', data=None, headers=None):
 
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}"
+
+
+async def async_video_task(video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token):
+    video_upload_response = await send_video_to_api(video_file, f"{API_URL}/v1/upload")
+    if video_upload_response:
+        print(f"Lux (calculated): {lux}")
+        send_cage_message(
+            secret_token,
+            int(lux),
+            int(foodDistance),
+            int(waterDistance),
+            1,
+            current_timestamp,
+            video_upload_response.get('upload_url')
+        )
+    # Delete the video file asynchronously
+    await asyncio.to_thread(os.remove, video_file)
+    print(f"Deleted file: {video_file}")
+
+
+def run_async_video_task(video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token):
+    # Run the asynchronous video task in the background
+    asyncio.create_task(async_video_task(
+        video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token))
 
 
 def init_cage():
@@ -118,27 +143,15 @@ if __name__ == "__main__":
                 current_timestamp = int(time.time())
                 output_file = f"./videos/video_{current_timestamp}.mp4"
                 video_file = capture_video(DURATION, output_file)
-                video_upload_response = send_video_to_api(
-                    video_file, f"{API_URL}/v1/upload")
-                os.remove(video_file)
-                print(f"Deleted file: {video_file}")
                 foodDistance = food.get_distance_cm()
                 waterDistance = water.get_distance_cm()
                 lux = light.read_tsl2591()
                 print(f"food left: {foodDistance}cm")
                 print(f"water left: {waterDistance}")
                 # print(f"Visible light level: {visible}")
-                print(f"Lux (calculated): {lux}")
-                send_cage_message(
-                    secret_token,
-                    int(lux),
-                    int(foodDistance),
-                    int(waterDistance),
-                    1,
-                    current_timestamp,
-                    video_upload_response.get('upload_url')
-                )
-                # print()
+                run_async_video_task(
+                    video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token)
+# print()
 
     else:
         print("Failed to initialize cage.")

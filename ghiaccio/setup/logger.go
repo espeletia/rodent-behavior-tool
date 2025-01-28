@@ -121,8 +121,8 @@ func buildOptions(cfg config.Config) []zap.Option {
 	}
 
 	serviceFields := []zapcore.Field{
-		zap.String("name", "echoes"),
-		zap.String("environment", "echoes"),
+		zap.String("name", "tusk"),
+		zap.String("environment", "tusk"),
 	}
 
 	opts = append(opts, zap.Fields(serviceFields...))
