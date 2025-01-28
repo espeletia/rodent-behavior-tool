@@ -3,11 +3,10 @@ package view
 import (
 	"fmt"
 	"ghiaccio/models"
-	"strconv"
 	"time"
 )
 
-templ AppView(usr models.User, cages []models.Cage) {
+templ AppView(usr models.User, cages []models.Cage, analysis []models.VideoAnalysis) {
 	<html>
 		<head>
 			<title>Ratt</title>
@@ -22,12 +21,49 @@ body, html {
     font-family: 'Nunito', sans-serif;
     border-sizing: border-box;
 }
+.fab-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: end;
+        }
+        .fab, .fab-option {
+            width: :fit-content;
+            min-width: 60px;
+            height: 60px;
+            border-radius: 10%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .fab-option {
+            margin-bottom: 10px;
+            font-size: 24px;
+            transform: scale(0);
+        }
+        .fab-container.expanded .fab-option {
+            transform: scale(1);
+        }
+        .fab-container.expanded .fab {
+            background-color: #C35817;
+        }
             </style>
 		</head>
 		<body class="bg-slate-950 text-slate-50">
 			@Header()
 			{ Greeting(usr.DisplayName) }
 			@CageTable(cages)
+			@Button()
+			@VideoAnalysisTable(analysis)
 		</body>
 	</html>
 }
@@ -52,8 +88,41 @@ body, html {
 		<body class="bg-slate-950 text-slate-50">
 			@Header()
 			@About()
+			@Button()
 		</body>
 	</html>
+}
+
+templ Button() {
+	<div class="fab-container" id="fabContainer">
+		<button class="fab-option" onclick="actionOne()">Cage</button>
+		<button class="fab-option" onclick="actionTwo()">Video Analysis</button>
+		<button class="fab" id="fabButton" onclick="toggleFab()">+</button>
+	</div>
+	<script>
+        const fabContainer = document.getElementById('fabContainer');
+        const fabButton = document.getElementById('fabButton');
+
+        function toggleFab() {
+            fabContainer.classList.toggle('expanded');
+            fabButton.textContent = fabContainer.classList.contains('expanded') ? '×' : '+';
+        }
+
+        function actionOne() {
+            alert('Action 1 triggered!');
+        }
+
+        function actionTwo() {
+            alert('Action 2 triggered!');
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!fabContainer.contains(event.target)) {
+                fabContainer.classList.remove('expanded');
+                fabButton.textContent = '+';
+            }
+        });
+    </script>
 }
 
 templ About() {
@@ -82,6 +151,7 @@ templ VideoAnalysisTable(analyses []models.VideoAnalysis) {
 				<th>Name</th>
 				<th>Owner ID</th>
 				<th>Description</th>
+				<th>Video</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -90,6 +160,16 @@ templ VideoAnalysisTable(analyses []models.VideoAnalysis) {
 					<td>{ analysis.ID }</td>
 					<td>{ analysis.Name }</td>
 					<td>{ analysis.OwnerId }</td>
+					<td>
+						if analysis.Description != nil {
+							{ *analysis.Description }
+						} else {
+							N/A
+						}
+					</td>
+					<td>
+						<a href={ templ.SafeURL(analysis.Video.Url) }>Video</a>
+					</td>
 				</tr>
 			}
 		</tbody>
@@ -98,7 +178,6 @@ templ VideoAnalysisTable(analyses []models.VideoAnalysis) {
 
 // Component to display Cage in a table
 templ CageTable(cages []models.Cage) {
-	{ strconv.Itoa(len(cages)) }
 	<table class="table-auto w-full">
 		<thead>
 			<tr>

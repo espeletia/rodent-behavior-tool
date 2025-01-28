@@ -51,3 +51,26 @@ func GenericFetch[T any](ctx context.Context, endpoint, method string, body io.R
 
 	return &result, nil
 }
+
+func GenericFetchNoAuth[T any](ctx context.Context, endpoint, method string, body io.Reader) (*T, error) {
+	request, err := http.NewRequest(method, endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+	client := http.Client{}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	zap.L().Info("status", zap.Int("statuscode", response.StatusCode))
+
+	defer response.Body.Close()
+	var result T
+	err = json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}

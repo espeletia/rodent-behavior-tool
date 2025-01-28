@@ -91,8 +91,10 @@ func (uu *UserUsecase) Register(ctx context.Context, userData models.UserData) e
 	}
 
 	jsonReader := bytes.NewReader(jsonData)
-	_, err = GenericFetch[any](ctx, uu.apiUrl+"/v1/register", "PUT", jsonReader)
+	result, err := GenericFetchNoAuth[any](ctx, uu.apiUrl+"/v1/register", "PUT", jsonReader)
+	zap.L().Info("ok", zap.Any("any", result))
 	if err != nil {
+		zap.L().Info("error", zap.Error(err))
 		return err
 	}
 	return nil

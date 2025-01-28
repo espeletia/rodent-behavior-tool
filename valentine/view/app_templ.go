@@ -11,11 +11,10 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 	"ghiaccio/models"
-	"strconv"
 	"time"
 )
 
-func AppView(usr models.User, cages []models.Cage) templ.Component {
+func AppView(usr models.User, cages []models.Cage, analysis []models.VideoAnalysis) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -36,7 +35,7 @@ func AppView(usr models.User, cages []models.Cage) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<html><head><title>Ratt</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n            @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&display=swap');\n\nbody, html {\n    min-height: 100vh;\n    margin: 0;\n    overflow-x: hidden;\n    font-family: 'Nunito', sans-serif;\n    border-sizing: border-box;\n}\n            </style></head><body class=\"bg-slate-950 text-slate-50\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<html><head><title>Ratt</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n            @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&display=swap');\n\nbody, html {\n    min-height: 100vh;\n    margin: 0;\n    overflow-x: hidden;\n    font-family: 'Nunito', sans-serif;\n    border-sizing: border-box;\n}\n.fab-container {\n            position: fixed;\n            bottom: 20px;\n            right: 20px;\n            display: flex;\n            flex-direction: column;\n            align-items: end;\n        }\n        .fab, .fab-option {\n            width: :fit-content;\n            min-width: 60px;\n            height: 60px;\n            border-radius: 10%;\n            background-color: #007bff;\n            color: white;\n            border: none;\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            font-size: 30px;\n            cursor: pointer;\n            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\n            transition: all 0.3s ease;\n        }\n        .fab-option {\n            margin-bottom: 10px;\n            font-size: 24px;\n            transform: scale(0);\n        }\n        .fab-container.expanded .fab-option {\n            transform: scale(1);\n        }\n        .fab-container.expanded .fab {\n            background-color: #C35817;\n        }\n            </style></head><body class=\"bg-slate-950 text-slate-50\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -47,13 +46,21 @@ func AppView(usr models.User, cages []models.Cage) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(Greeting(usr.DisplayName))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 29, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 63, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = CageTable(cages).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = Button().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = VideoAnalysisTable(analysis).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -98,7 +105,40 @@ func AboutView() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = Button().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</body></html>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func Button() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"fab-container\" id=\"fabContainer\"><button class=\"fab-option\" onclick=\"actionOne()\">Cage</button> <button class=\"fab-option\" onclick=\"actionTwo()\">Video Analysis</button> <button class=\"fab\" id=\"fabButton\" onclick=\"toggleFab()\">+</button></div><script>\n        const fabContainer = document.getElementById('fabContainer');\n        const fabButton = document.getElementById('fabButton');\n\n        function toggleFab() {\n            fabContainer.classList.toggle('expanded');\n            fabButton.textContent = fabContainer.classList.contains('expanded') ? '×' : '+';\n        }\n\n        function actionOne() {\n            alert('Action 1 triggered!');\n        }\n\n        function actionTwo() {\n            alert('Action 2 triggered!');\n        }\n\n        document.addEventListener('click', function(event) {\n            if (!fabContainer.contains(event.target)) {\n                fabContainer.classList.remove('expanded');\n                fabButton.textContent = '+';\n            }\n        });\n    </script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -122,12 +162,12 @@ func About() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<article class=\"centerStage\"><h2>I'm a developer working on this project for a school and for a graduation project</h2><br><h3>The story about this project was as follows:</h3><br><p>In the third year of highschool, we had to choose a project for graduation.</p><p>There were project topics that the teachers provided to us, but i insisted to do this.</p><p>When i chose this project, Mrs Janů took a lead to this project.</p><p>After the summer break, i started to work on this project.</p><p>Made the first little steps.</p><p>The basic layout, some css, basic page layout and so on.</p><p>Then the problems came by.</p><p>I started to work on the actuall flowerpot and the software behind it.</p><p>On the Raspberry Pi, I went and installed the OS and then Python, because there were relatively easily accessable libraries for the sensosr i had.</p><p>But the big mistake was to stick with the first, easier to setup, but harder to work with method.</p><p>I chose to use Firebase Realtime Database.</p><p>The Realtime Database was at the time the obvious option, because it was by the name, \"realtime\".</p><p>I set up the RPi to send data to it and it worked.</p><p>But reading the data from the frontend was a lot more difficult than i anticipated.</p><p>I just couldn't make it work and got stuck on it for too long.</p><p>When the situation reached a breaking point, i bit my tongue and started working on it for good.</p><p>I rewrote the code on the RPi to send the data from sensors to the standard Firestore, which made it a lot easyer to read on the frontend.</p><p>I assambled the whole flowerpot with all of the sensors and the RPi into the flowerpot i've designed and made my girlfriend print on her 3D printer.</p><p>Made some final touches to it and continued working on the software again.</p><p>With the software, I made a good progress from the way it looked then.</p><p>I made the site work relatively intuitively for at least my family that I shown my project.</p><p>When the time had come, i did the last couple of things just to make it mostly work.</p><p>There are still a lot of work to do.</p><p>I need to make the site look a lot better, I need to add the authentification and a lot more stuff I'm forgetting.</p><p>For the graduation project, this is what I made, a \"working\" site that displays the data to the user in an intuitive Ui that anyone using the site would understand what he is looking at.</p><p>I cannot work at the project anymore, since it is allready submited, but I certainly will work at it after the school and hopefully make it a real thing that people could buy or make their own, since all the stuff but the software is of the shelf.</p></article><article class=\"centerStage\"><p>So i've failed to make this project good enough to success and for the school to let me graduate.</p></article>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<article class=\"centerStage\"><h2>I'm a developer working on this project for a school and for a graduation project</h2><br><h3>The story about this project was as follows:</h3><br><p>In the third year of highschool, we had to choose a project for graduation.</p><p>There were project topics that the teachers provided to us, but i insisted to do this.</p><p>When i chose this project, Mrs Janů took a lead to this project.</p><p>After the summer break, i started to work on this project.</p><p>Made the first little steps.</p><p>The basic layout, some css, basic page layout and so on.</p><p>Then the problems came by.</p><p>I started to work on the actuall flowerpot and the software behind it.</p><p>On the Raspberry Pi, I went and installed the OS and then Python, because there were relatively easily accessable libraries for the sensosr i had.</p><p>But the big mistake was to stick with the first, easier to setup, but harder to work with method.</p><p>I chose to use Firebase Realtime Database.</p><p>The Realtime Database was at the time the obvious option, because it was by the name, \"realtime\".</p><p>I set up the RPi to send data to it and it worked.</p><p>But reading the data from the frontend was a lot more difficult than i anticipated.</p><p>I just couldn't make it work and got stuck on it for too long.</p><p>When the situation reached a breaking point, i bit my tongue and started working on it for good.</p><p>I rewrote the code on the RPi to send the data from sensors to the standard Firestore, which made it a lot easyer to read on the frontend.</p><p>I assambled the whole flowerpot with all of the sensors and the RPi into the flowerpot i've designed and made my girlfriend print on her 3D printer.</p><p>Made some final touches to it and continued working on the software again.</p><p>With the software, I made a good progress from the way it looked then.</p><p>I made the site work relatively intuitively for at least my family that I shown my project.</p><p>When the time had come, i did the last couple of things just to make it mostly work.</p><p>There are still a lot of work to do.</p><p>I need to make the site look a lot better, I need to add the authentification and a lot more stuff I'm forgetting.</p><p>For the graduation project, this is what I made, a \"working\" site that displays the data to the user in an intuitive Ui that anyone using the site would understand what he is looking at.</p><p>I cannot work at the project anymore, since it is allready submited, but I certainly will work at it after the school and hopefully make it a real thing that people could buy or make their own, since all the stuff but the software is of the shelf.</p></article><article class=\"centerStage\"><p>So i've failed to make this project good enough to success and for the school to let me graduate.</p></article>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -164,37 +204,24 @@ func VideoAnalysisTable(analyses []models.VideoAnalysis) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<table class=\"table-auto w-full\"><thead><tr><th>ID</th><th>Name</th><th>Owner ID</th><th>Description</th></tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<table class=\"table-auto w-full\"><thead><tr><th>ID</th><th>Name</th><th>Owner ID</th><th>Description</th><th>Video</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, analysis := range analyses {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<tr><td>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(analysis.ID)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 90, Col: 22}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</td><td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<tr><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(analysis.Name)
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(analysis.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 91, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 160, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -205,20 +232,62 @@ func VideoAnalysisTable(analyses []models.VideoAnalysis) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(analysis.OwnerId)
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(analysis.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 92, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 161, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</td><td>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(analysis.OwnerId)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 162, Col: 27}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if analysis.Description != nil {
+				var templ_7745c5c3_Var10 string
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(*analysis.Description)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 165, Col: 30}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "N/A")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td><a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var11 templ.SafeURL = templ.SafeURL(analysis.Video.Url)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var11)))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\">Video</a></td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</tbody></table>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</tbody></table>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -243,66 +312,57 @@ func CageTable(cages []models.Cage) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var9 == nil {
-			templ_7745c5c3_Var9 = templ.NopComponent
+		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var12 == nil {
+			templ_7745c5c3_Var12 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(cages)))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 101, Col: 27}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<table class=\"table-auto w-full\"><thead><tr><th>ID</th><th>Name</th></tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<table class=\"table-auto w-full\"><thead><tr><th>ID</th><th>Name</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, cage := range cages {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<tr><td><a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<tr><td><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var11 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/cage/%s", cage.ID))
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var11)))
+			var templ_7745c5c3_Var13 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/cage/%s", cage.ID))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var13)))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var12 string
-			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(cage.ID)
+			var templ_7745c5c3_Var14 string
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(cage.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 112, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 191, Col: 78}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</a></td><td>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(cage.Name)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 113, Col: 20}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</a></td><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</td></tr>")
+			var templ_7745c5c3_Var15 string
+			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(cage.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/app.templ`, Line: 192, Col: 20}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</tbody></table>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</tbody></table>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

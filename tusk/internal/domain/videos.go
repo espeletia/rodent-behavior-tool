@@ -24,6 +24,11 @@ type AnalystResult struct {
 	Url     string
 }
 
+type VideosCursored struct {
+	Data   []Video
+	Cursor Cursor
+}
+
 type EncodingResult struct {
 	ID      uuid.UUID
 	VideoID uuid.UUID

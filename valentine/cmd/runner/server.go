@@ -51,8 +51,9 @@ func setupService(configuration *config.Config) (*ValentineServiceComponents, er
 
 	userUsecase := usecases.NewUserUsecase(http.Client{}, configuration.TuskConfig.URL)
 	cageUsecase := usecases.NewCageUsecase(http.Client{}, configuration.TuskConfig.URL)
+	videoUsecase := usecases.NewVideoUsecase(http.Client{}, configuration.TuskConfig.URL)
 
-	viewHandler := handlers.NewViewHandler(userUsecase, cageUsecase)
+	viewHandler := handlers.NewViewHandler(userUsecase, cageUsecase, videoUsecase)
 
 	commonHandler := handlers.NewCommonHandler()
 

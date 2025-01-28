@@ -63,6 +63,20 @@ func (vu *VideoUsecase) CreateNewVideo(ctx context.Context, data domain.CreateVi
 
 }
 
+func (vu *VideoUsecase) GetVideosCursored(ctx context.Context, offset domain.OffsetLimit) (*domain.VideosCursored, error) {
+	usr, ok := middleware.GetUser(ctx)
+	if !ok {
+		return nil, domain.Unauthorized
+	}
+
+	videos, err := vu.videoDatabaseStore.GetVideosCursored(ctx, usr.ID, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return videos, nil
+}
+
 func (vu *VideoUsecase) GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error) {
 	_, ok := middleware.GetUser(ctx)
 	if !ok {

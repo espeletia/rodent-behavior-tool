@@ -23,6 +23,7 @@ type VideoDatabaseStore interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error)
 	Create(ctx context.Context, video domain.Video) error
 	AddAnalyzedVideo(ctx context.Context, videoID, mediaId uuid.UUID) error
+	GetVideosCursored(ctx context.Context, userId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.VideosCursored, error)
 }
 
 type TokenGeneratorAuthInterface interface {

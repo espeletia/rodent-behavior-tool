@@ -136,6 +136,72 @@ func (vah *VideoAnalysisHandler) GetVideoAnalysisByID(w http.ResponseWriter, r *
 	return nil
 }
 
+var GetVideosCursoredOp = openapi3Struct.Path{
+	Path: "/v1/videos",
+	Item: openapi3.PathItem{
+		Get: &openapi3.Operation{
+			Tags:        []string{"VideoAnalysis"},
+			OperationID: "getVideosCursored",
+			Description: "fetch video analysis with cursor",
+			Parameters: openapi3.Parameters{
+				{
+					Ref: "#/components/parameters/beforeQuery",
+				},
+				{
+					Ref: "#/components/parameters/afterQuery",
+				},
+				{
+					Ref: "#/components/parameters/limitQuery",
+				},
+			},
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("videos cursored response"),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: openapi3.NewSchemaRef("#/components/schemas/CursoredVideoAnalysis", nil),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
+func (vah *VideoAnalysisHandler) GetVideosCursored(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	offsetlimit := defaultOffsetLimit()
+	cursor, err := getCursorFromRequest(r)
+	if err == nil {
+		offsetlimit, err = mapCursorInput(ctx, cursor)
+		if err != nil {
+			return err
+		}
+	}
+	data, err := vah.videoUsecase.GetVideosCursored(ctx, *offsetlimit)
+	if err != nil {
+		return err
+	}
+	result := []models.VideoAnalysis{}
+	for _, video := range data.Data {
+		result = append(result, mapVideoToModel(video))
+	}
+	videosCursored := models.CursoredVideoAnalysis{
+		Data:   result,
+		Cursor: models.Cursor(data.Cursor),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(videosCursored)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func mapVideoDTOToDomain(data models.CreateVideoDto) domain.CreateVideoDto {
 	return domain.CreateVideoDto{
 		VideoUrl:    data.VideoUrl,
