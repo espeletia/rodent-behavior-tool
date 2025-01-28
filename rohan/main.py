@@ -122,8 +122,7 @@ def send_cage_message(secret_token, light, food, water, revision, timestamp, vid
         return f"Error sending cage message: {e}"
 
 
-# Example usage:
-if __name__ == "__main__":
+async def main():
     food = UltrasonicSensor(24, 18)
     water = UltrasonicSensor(23, 17)
     light = LightSensor()
@@ -134,7 +133,7 @@ if __name__ == "__main__":
         display.draw_text(activation)
         user_id = poll_cage_status(secret_token)
         while user_id is None:
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)  # Use asyncio.sleep instead of time.sleep
             user_id = poll_cage_status(secret_token)
         if user_id is not None:
             print(user_id)
@@ -148,10 +147,15 @@ if __name__ == "__main__":
                 lux = light.read_tsl2591()
                 print(f"food left: {foodDistance}cm")
                 print(f"water left: {waterDistance}")
-                # print(f"Visible light level: {visible}")
                 run_async_video_task(
                     video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token)
-# print()
+                # Add a small delay to avoid busy-waiting
+                await asyncio.sleep(1)
 
     else:
         print("Failed to initialize cage.")
+
+
+# Run the main function in the event loop
+if __name__ == "__main__":
+    asyncio.run(main())
