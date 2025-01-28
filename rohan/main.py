@@ -118,14 +118,14 @@ if __name__ == "__main__":
                 current_timestamp = int(time.time())
                 output_file = f"./videos/video_{current_timestamp}.mp4"
                 video_file = capture_video(DURATION, output_file)
-                video_upload_response = send_video_to_api(
-                    video_file, f"{API_URL}/v1/upload")
                 foodDistance = food.get_distance_cm()
                 waterDistance = water.get_distance_cm()
                 lux = light.read_tsl2591()
                 print(f"food left: {foodDistance}cm")
                 print(f"water left: {waterDistance}")
                 # print(f"Visible light level: {visible}")
+                video_upload_response = send_video_to_api(
+                    video_file, f"{API_URL}/v1/upload")
                 print(f"Lux (calculated): {lux}")
                 send_cage_message(
                     secret_token,
