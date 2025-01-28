@@ -6,6 +6,7 @@ from utils.logger import log_error, log_message
 from utils.gracefulTermination import GracefulTermination
 from detection.detection import Detection
 from urllib.parse import urlparse
+from configuration.config import S3_ENDPOINT
 
 
 class AnalystWorker:
@@ -37,10 +38,11 @@ class AnalystWorker:
                             "video_id": video_id,
                             "media_id": media_id,
                             # TODO: Make it fully configurable
-                            "url": f"http://minio:9000/{bucket}/{results}",
+                            "url": f"{S3_ENDPOINT}/{bucket}/{results}",
                         },
                         "Err": None,
                     }
+                    print(S3_ENDPOINT)
 
                     await nats_client.publish_analyst_result(analyst_job_result_message)
                     await msg.ack()

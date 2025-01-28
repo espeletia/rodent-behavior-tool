@@ -1,7 +1,5 @@
 FROM alpine:3.20
 ARG app="tusk"
-ARG s3Url="http://minio:9000"
-ENV S3_URL=$s3Url
 
 ADD ./${app}/configurations /app/configurations
 ADD ./${app}/build /app

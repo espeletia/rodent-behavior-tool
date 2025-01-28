@@ -31,6 +31,7 @@ func NewS3FileManager(s3client *s3.Client) *S3FileManager {
 }
 
 func (hfm *S3FileManager) DownloadFile(ctx context.Context, src string, dir string) (ports.File, error) {
+	zap.L().Info("url", zap.String("url", src))
 	u, err := url.Parse(src)
 	if err != nil {
 		return nil, err
@@ -89,6 +90,8 @@ func (hfm *S3FileManager) GetFileMetadata(ctx context.Context, url string) (*dom
 		return nil, err
 	}
 
+	zap.L().Info("url params", zap.Stringp("bucket", s3Url.Bucket), zap.Stringp("key", s3Url.Key))
+
 	obj, err := hfm.s3client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: s3Url.Bucket,
 		Key:    s3Url.Key,
@@ -119,12 +122,33 @@ func (hfm *S3FileManager) GetFileMetadata(ctx context.Context, url string) (*dom
 }
 
 func (hfm *S3FileManager) CopyS3URI(ctx context.Context, sourceURL, destURL util.S3URI) error {
-	_, err := hfm.s3client.CopyObject(ctx, &s3.CopyObjectInput{
-		Bucket:     destURL.Bucket,
-		CopySource: aws.String(fmt.Sprintf("%s/%s", *sourceURL.Bucket, *sourceURL.Key)),
-		Key:        destURL.Key,
-		ACL:        types.ObjectCannedACLPublicRead,
+	// _, err := hfm.s3client.CopyObject(ctx, &s3.CopyObjectInput{
+	// 	Bucket:     destURL.Bucket,
+	// 	CopySource: aws.String(fmt.Sprintf("%s/%s", *sourceURL.Bucket, *sourceURL.Key)),
+	// 	Key:        destURL.Key,
+	// 	ACL:        types.ObjectCannedACLPublicRead,
+	// })
+
+	obj, err := hfm.s3client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: sourceURL.Bucket,
+		Key:    sourceURL.Key,
 	})
+	if err != nil {
+		return err
+	}
+
+	uploader := manager.NewUploader(hfm.s3client)
+	_, err = uploader.Upload(ctx, &s3.PutObjectInput{
+		Bucket:      destURL.Bucket,
+		Key:         destURL.Key,
+		Body:        obj.Body,
+		ContentType: obj.ContentType,
+		ACL:         types.ObjectCannedACLPublicRead,
+	})
+	if err != nil {
+		return err
+	}
+
 	if err != nil {
 		return err
 	}

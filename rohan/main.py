@@ -120,8 +120,6 @@ if __name__ == "__main__":
                 video_file = capture_video(DURATION, output_file)
                 video_upload_response = send_video_to_api(
                     video_file, f"{API_URL}/v1/upload")
-                os.remove(video_file)
-                print(f"Deleted file: {video_file}")
                 foodDistance = food.get_distance_cm()
                 waterDistance = water.get_distance_cm()
                 lux = light.read_tsl2591()
@@ -138,6 +136,8 @@ if __name__ == "__main__":
                     current_timestamp,
                     video_upload_response.get('upload_url')
                 )
+                os.remove(video_file)
+                print(f"Deleted file: {video_file}")
                 # print()
 
     else:
