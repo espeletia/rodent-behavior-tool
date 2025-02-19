@@ -3,11 +3,14 @@ package usecases
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
+	commonDomain "ghiaccio/domain"
 	"math/big"
 	"strings"
 	"tusk/internal/domain"
 	"tusk/internal/middleware"
 	"tusk/internal/ports"
+	"tusk/internal/util"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -16,17 +19,36 @@ import (
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 type CagesUsecase struct {
+	videoUsecase         *VideoUsecase
 	cageDatabaseStore    ports.CagesDatabaseStore
 	activationCodeLength int64
 	secretTokenLength    int64
+	queueHandler         ports.QueueHandler
 }
 
-func NewCagesUsecase(cageDatabaseStore ports.CagesDatabaseStore, activationCodeLength int64, secretTokenLength int64) *CagesUsecase {
+func NewCagesUsecase(videoUsecase *VideoUsecase, cageDatabaseStore ports.CagesDatabaseStore, activationCodeLength int64, secretTokenLength int64, queueHandler ports.QueueHandler) *CagesUsecase {
 	return &CagesUsecase{
 		cageDatabaseStore:    cageDatabaseStore,
 		activationCodeLength: activationCodeLength,
 		secretTokenLength:    secretTokenLength,
+		queueHandler:         queueHandler,
+		videoUsecase:         videoUsecase,
 	}
+}
+
+func (cu *CagesUsecase) ProcessInternalCageJob(ctx context.Context, job commonDomain.CageMessageVideoAnalysisJob) error {
+	zap.L().Info("Process internal cage job", zap.Any("job", job))
+	videoDto := domain.CreateVideoDto{
+		Name:        fmt.Sprintf("Cage-%d", job.MessageID),
+		Description: util.ToPointer(fmt.Sprintf("From cage %s", job.CageID)),
+		VideoUrl:    job.Url,
+	}
+	video, err := cu.videoUsecase.CreateNewCageVideo(ctx, videoDto, job.CageID)
+	if err != nil {
+		return err
+	}
+	err = cu.cageDatabaseStore.InsertVideoIDToCageMessage(ctx, job.MessageID, video.ID)
+	return err
 }
 
 func (cu *CagesUsecase) GetCageMessages(ctx context.Context, cageId uuid.UUID, offset domain.OffsetLimit) (*domain.CageMessasgesCursored, error) {
@@ -111,7 +133,22 @@ func (cu *CagesUsecase) ProcessCageMessage(ctx context.Context, message domain.C
 	if !ok {
 		return domain.Unauthorized
 	}
-	err := cu.cageDatabaseStore.InsertNewCageMessage(ctx, message, cage.ID)
+	storedMessage, err := cu.cageDatabaseStore.InsertNewCageMessage(ctx, message, cage.ID)
+	if err != nil {
+		return err
+	}
+	if message.VideoUrl == nil {
+		return nil
+	}
+	job := commonDomain.CageMessageVideoAnalysisJob{
+		ID:        uuid.New(),
+		CageID:    cage.ID,
+		Url:       *message.VideoUrl,
+		MessageID: storedMessage.ID,
+		Timestamp: message.Timestamp.Unix(),
+	}
+	zap.L().Info("Preparing internal cage job", zap.Any("job", job))
+	err = cu.queueHandler.AddInternalCageJob(ctx, job)
 	return err
 }
 

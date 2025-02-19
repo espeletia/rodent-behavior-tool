@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrInvalidEmail          = commonDomain.Error{Message: "Invalid email", Code: http.StatusNotAcceptable}
+	BadRequest               = commonDomain.Error{Message: "bad request", Code: http.StatusBadRequest}
 	InvalidCredentials       = commonDomain.Error{Message: "Invalid credentials", Code: http.StatusUnauthorized}
 	Unauthorized             = commonDomain.Error{Message: "Unauthorized", Code: http.StatusUnauthorized}
 	UserNotFound             = commonDomain.Error{Message: "User not found", Code: http.StatusNotFound}

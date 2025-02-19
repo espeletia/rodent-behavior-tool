@@ -5,7 +5,8 @@ import "github.com/google/uuid"
 type Video struct {
 	ID            uuid.UUID
 	Video         MediaFile
-	OwnerId       uuid.UUID
+	OwnerId       *uuid.UUID
+	CageId        *uuid.UUID
 	Description   *string
 	Name          string
 	AnalysedVideo *MediaFile

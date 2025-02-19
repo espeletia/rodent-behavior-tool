@@ -8,6 +8,9 @@ JobAnalystResultConsumer: analystResult
 JobAnalystResultSubject: analystJobFinished
 JobAnalystSubject: analystJob
 
+InternalCageJobConsumer: cageJobWorker
+InternalCageJobSubject: cageJobs
+
 Streams:
   Encoder:
     Name: ENCODER
@@ -45,3 +48,17 @@ Streams:
         AckWait: 5m
         AckPending: 1000
         Subject: analystJobFinished
+  Internal:
+    Name: INTERNAL
+    Subjects:
+      - INTERNAL.*
+    MaxMsg: 300000
+    MaxRetry: 2
+    MaxAge: 240h
+    AckWait: 5m
+    DuplicateWindow: 2m
+    Consumers:
+      - Name: cageJobWorker
+        AckWait: 5m
+        AckPending: 1000
+        Subject: cageJobs

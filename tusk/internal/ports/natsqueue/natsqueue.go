@@ -23,8 +23,12 @@ type NatsQueue struct {
 	encodingStream  string
 	encodingSubject string
 
-	analystResultJetstream  *commonPorts.NatsJetstream[commonDomain.AnalystJobResultMessage]
-	encodingResultJetstream *commonPorts.NatsJetstream[commonDomain.VideoEncodingResultMessage]
+	internalJobStream      string
+	internalCageJobSubject string
+
+	analystResultJetstream   *commonPorts.NatsJetstream[commonDomain.AnalystJobResultMessage]
+	encodingResultJetstream  *commonPorts.NatsJetstream[commonDomain.VideoEncodingResultMessage]
+	internalCageJobJetstream *commonPorts.NatsJetstream[commonDomain.CageMessageVideoAnalysisJob]
 }
 
 func NewNatsQueue(cfg config.NatsConfig) (*NatsQueue, error) {
@@ -44,6 +48,8 @@ func NewNatsQueue(cfg config.NatsConfig) (*NatsQueue, error) {
 	encodingSubject := fmt.Sprintf("%s.%s", cfg.Streams.Encoder.Name, cfg.JobEncoderSubject)
 	encodingResultSubject := fmt.Sprintf("%s.%s", cfg.Streams.Encoder.Name, cfg.JobEncoderResultSubject)
 
+	internalCageJobSubject := fmt.Sprintf("%s.%s", cfg.Streams.Internal.Name, cfg.InternalCageJobSubject)
+
 	return &NatsQueue{
 		conn:                 conn,
 		client:               js,
@@ -51,10 +57,15 @@ func NewNatsQueue(cfg config.NatsConfig) (*NatsQueue, error) {
 		analystSubject:       analystSubject,
 		analystResultSubject: analystResultSubject,
 
-		encodingStream:          cfg.Streams.Encoder.Name,
-		encodingSubject:         encodingSubject,
-		analystResultJetstream:  commonPorts.NewNatsJetstream[commonDomain.AnalystJobResultMessage](analystResultSubject, cfg.JobAnalystResultConsumer, 1, js),
-		encodingResultJetstream: commonPorts.NewNatsJetstream[commonDomain.VideoEncodingResultMessage](encodingResultSubject, cfg.JobAnalystResultConsumer, 1, js),
+		encodingStream:  cfg.Streams.Encoder.Name,
+		encodingSubject: encodingSubject,
+
+		internalJobStream:      cfg.Streams.Internal.Name,
+		internalCageJobSubject: internalCageJobSubject,
+
+		analystResultJetstream:   commonPorts.NewNatsJetstream[commonDomain.AnalystJobResultMessage](analystResultSubject, cfg.JobAnalystResultConsumer, 1, js),
+		encodingResultJetstream:  commonPorts.NewNatsJetstream[commonDomain.VideoEncodingResultMessage](encodingResultSubject, cfg.JobAnalystResultConsumer, 1, js),
+		internalCageJobJetstream: commonPorts.NewNatsJetstream[commonDomain.CageMessageVideoAnalysisJob](internalCageJobSubject, cfg.InternalCageJobConsumer, 1, js),
 	}, nil
 }
 
@@ -84,12 +95,29 @@ func (nq *NatsQueue) AddEncoderJob(ctx context.Context, job commonDomain.VideoEn
 	return nil
 }
 
+func (nq *NatsQueue) AddInternalCageJob(ctx context.Context, job commonDomain.CageMessageVideoAnalysisJob) error {
+	msgBytes, err := prepareMessage(ctx, job, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = nq.client.Publish(nq.internalCageJobSubject, *msgBytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (nq *NatsQueue) HandleAnalystJobResult(ctx context.Context, handler func(ctx context.Context, job commonDomain.AnalystJobResultMessage) error, errChan chan error) error {
 	return nq.analystResultJetstream.GenericHandler(ctx, handler, errChan)
 }
 
 func (nq *NatsQueue) HandleEncodingJobResult(ctx context.Context, handler func(ctx context.Context, job commonDomain.VideoEncodingResultMessage) error, errChan chan error) error {
 	return nq.encodingResultJetstream.GenericHandler(ctx, handler, errChan)
+}
+
+func (nq *NatsQueue) HandleInternalCageJob(ctx context.Context, handler func(ctx context.Context, job commonDomain.CageMessageVideoAnalysisJob) error, errChan chan error) error {
+	return nq.internalCageJobJetstream.GenericHandler(ctx, handler, errChan)
 }
 
 func prepareMessage[Message any](ctx context.Context, message Message, error *string) (*[]byte, error) {

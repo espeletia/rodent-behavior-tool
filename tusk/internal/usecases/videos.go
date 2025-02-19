@@ -30,16 +30,30 @@ func (vu *VideoUsecase) CreateNewVideo(ctx context.Context, data domain.CreateVi
 	if !ok {
 		return domain.Unauthorized
 	}
+	_, err := vu.createNewVideo(ctx, data, &usr.ID, nil)
+
+	return err
+}
+
+func (vu *VideoUsecase) CreateNewCageVideo(ctx context.Context, data domain.CreateVideoDto, cageID uuid.UUID) (*domain.Video, error) {
+	return vu.createNewVideo(ctx, data, nil, &cageID)
+}
+
+func (vu *VideoUsecase) createNewVideo(ctx context.Context, data domain.CreateVideoDto, ownerID, cageID *uuid.UUID) (*domain.Video, error) {
+	if ownerID == nil && cageID == nil {
+		return nil, domain.BadRequest
+	}
 	videoId := uuid.New()
 	videoMedia, err := vu.mediaUsecase.ProcessUploadedFile(ctx, data.VideoUrl, "video", videoId.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = vu.videoDatabaseStore.Create(ctx,
+	video, err := vu.videoDatabaseStore.Create(ctx,
 		domain.Video{
 			ID:            videoId,
 			Video:         *videoMedia,
-			OwnerId:       usr.ID,
+			OwnerId:       ownerID,
+			CageId:        cageID,
 			Description:   data.Description,
 			Name:          data.Name,
 			AnalysedVideo: nil,
@@ -47,7 +61,7 @@ func (vu *VideoUsecase) CreateNewVideo(ctx context.Context, data domain.CreateVi
 	)
 	if err != nil {
 		zap.L().Error(err.Error())
-		return err
+		return nil, err
 	}
 
 	err = vu.queueHandler.AddAnalystJob(ctx, commonDomain.AnalystJobMessage{
@@ -57,10 +71,10 @@ func (vu *VideoUsecase) CreateNewVideo(ctx context.Context, data domain.CreateVi
 		MediaID: videoMedia.ID,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
 
+	return video, nil
 }
 
 func (vu *VideoUsecase) GetVideosCursored(ctx context.Context, offset domain.OffsetLimit) (*domain.VideosCursored, error) {

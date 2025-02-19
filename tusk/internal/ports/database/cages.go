@@ -133,7 +133,7 @@ func (cdbs *CagesDatabaseStore) GetCageById(ctx context.Context, cageId, userId 
 
 }
 
-func (cdbs *CagesDatabaseStore) InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageID uuid.UUID) error {
+func (cdbs *CagesDatabaseStore) InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageID uuid.UUID) (*domain.CageMessage, error) {
 	insertModel := model.CageMessages{
 		CageID:   cageID,
 		Revision: int32(cageMessage.Revision),
@@ -151,20 +151,34 @@ func (cdbs *CagesDatabaseStore) InsertNewCageMessage(ctx context.Context, cageMe
 		table.CageMessages.VideoID,
 		table.CageMessages.UpdatedAt,
 		table.CageMessages.CreatedAt,
-	)).MODEL(insertModel)
+	)).MODEL(insertModel).RETURNING(table.CageMessages.AllColumns)
 
-	r, err := insertStmt.ExecContext(ctx, cdbs.db)
+	dest := []model.CageMessages{}
+
+	err := insertStmt.QueryContext(ctx, cdbs.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	if len(dest) != 1 {
+		return nil, errors.New("error inserting cage message")
+	}
+
+	result := mapCageMessageToDomain(dest[0])
+
+	return &result, nil
+}
+
+func (cdbs *CagesDatabaseStore) InsertVideoIDToCageMessage(ctx context.Context, cageMessageID int64, videoID uuid.UUID) error {
+	updateModel := model.CageMessages{
+		VideoID: &videoID,
+	}
+
+	updateStmt := table.CageMessages.UPDATE(table.CageMessages.VideoID).MODEL(updateModel).WHERE(table.CageMessages.ID.EQ(postgres.Int64(cageMessageID)))
+
+	_, err := updateStmt.ExecContext(ctx, cdbs.db)
 	if err != nil {
 		return err
 	}
-	rows, err := r.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows != 1 {
-		return errors.New("failed to insert cage message")
-	}
-
 	return nil
 }
 
@@ -193,6 +207,7 @@ func (cdbs *CagesDatabaseStore) FetchCageMessages(ctx context.Context, cageId uu
 
 func mapCageMessageToDomain(message model.CageMessages) domain.CageMessage {
 	return domain.CageMessage{
+		ID:        int64(message.ID),
 		CageID:    message.CageID,
 		Revision:  int64(message.Revision),
 		Water:     int64(message.Water),

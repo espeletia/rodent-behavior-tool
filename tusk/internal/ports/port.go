@@ -21,7 +21,7 @@ type MediaDatabaseStore interface {
 
 type VideoDatabaseStore interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Video, error)
-	Create(ctx context.Context, video domain.Video) error
+	Create(ctx context.Context, video domain.Video) (*domain.Video, error)
 	AddAnalyzedVideo(ctx context.Context, videoID, mediaId uuid.UUID) error
 	GetVideosCursored(ctx context.Context, userId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.VideosCursored, error)
 }
@@ -36,7 +36,8 @@ type CagesDatabaseStore interface {
 	ActivateCage(ctx context.Context, userId uuid.UUID, activationCode string) error
 	GetCagesByUserId(ctx context.Context, userId uuid.UUID) ([]domain.Cage, error)
 	GetCageBySecretToken(ctx context.Context, secretToken string) (*domain.Cage, error)
-	InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageId uuid.UUID) error
+	InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageId uuid.UUID) (*domain.CageMessage, error)
+	InsertVideoIDToCageMessage(ctx context.Context, cageMessageID int64, videoID uuid.UUID) error
 	GetCageById(ctx context.Context, cageId, userId uuid.UUID) (*domain.Cage, error)
 	FetchCageMessages(ctx context.Context, cageId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.CageMessasgesCursored, error)
 }
@@ -44,4 +45,5 @@ type CagesDatabaseStore interface {
 type QueueHandler interface {
 	AddAnalystJob(ctx context.Context, job commonDomain.AnalystJobMessage) error
 	AddEncoderJob(ctx context.Context, job commonDomain.VideoEncodingMessage) error
+	AddInternalCageJob(ctx context.Context, job commonDomain.CageMessageVideoAnalysisJob) error
 }
