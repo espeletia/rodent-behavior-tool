@@ -34,3 +34,11 @@ type AnalystJobResultMessage struct {
 	MediaID uuid.UUID `json:"media_id"`
 	Url     string    `json:"url"`
 }
+
+type CageMessageVideoAnalysisJob struct {
+	ID        uuid.UUID `json:"job_id"`
+	CageID    uuid.UUID `json:"cage_id"`
+	MessageID int64     `json:"message_id"`
+	Url       string    `json:"url"`
+	Timestamp int64     `json:"timestamp"`
+}

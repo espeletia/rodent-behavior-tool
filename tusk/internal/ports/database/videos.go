@@ -29,7 +29,7 @@ type video struct {
 	Media []model.Media
 }
 
-func (vdbs *VideoDatabaseStore) Create(ctx context.Context, video domain.Video) error {
+func (vdbs *VideoDatabaseStore) Create(ctx context.Context, video domain.Video) (*domain.Video, error) {
 	zap.L().Info("Inserting video")
 	insertModel := MapVideoToDB(video)
 
@@ -39,21 +39,21 @@ func (vdbs *VideoDatabaseStore) Create(ctx context.Context, video domain.Video) 
 			table.VideoAnalysis.UpdatedAt,
 			table.VideoAnalysis.AnalysedVideo,
 		),
-	).MODEL(insertModel)
+	).MODEL(insertModel).RETURNING(table.VideoAnalysis.AllColumns)
 
-	r, err := insertStmt.ExecContext(ctx, vdbs.DB)
+	dest := []model.VideoAnalysis{}
+
+	err := insertStmt.QueryContext(ctx, vdbs.DB, &dest)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	rows, err := r.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows != 1 {
-		return errors.New("failed to insert new video")
+	if len(dest) != 1 {
+		return nil, errors.New("failed to insert new video")
 	}
 
-	return nil
+	result := MapVideoToDomain(dest[0])
+
+	return &result, nil
 }
 
 func (vdbs *VideoDatabaseStore) AddAnalyzedVideo(ctx context.Context, videoID, mediaId uuid.UUID) error {
@@ -145,6 +145,16 @@ func (vdbs *VideoDatabaseStore) GetVideosCursored(ctx context.Context, userId uu
 
 }
 
+// Todo Imporove and add more fields that need no validation nor complicated queries
+func MapVideoToDomain(video model.VideoAnalysis) domain.Video {
+	return domain.Video{
+		ID:          video.ID,
+		Name:        video.Name,
+		Description: video.Description,
+	}
+
+}
+
 func MapVideoToDB(video domain.Video) model.VideoAnalysis {
 	return model.VideoAnalysis{
 		ID:          video.ID,
@@ -152,6 +162,7 @@ func MapVideoToDB(video domain.Video) model.VideoAnalysis {
 		Name:        video.Name,
 		Description: video.Description,
 		OwnerID:     video.OwnerId,
+		CageID:      video.CageId,
 	}
 }
 

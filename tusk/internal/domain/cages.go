@@ -20,6 +20,7 @@ type CageMessasgesCursored struct {
 }
 
 type CageMessage struct {
+	ID        int64
 	CageID    uuid.UUID
 	Revision  int64
 	Water     int64

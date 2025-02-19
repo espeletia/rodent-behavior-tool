@@ -83,7 +83,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	userUsecase := usecases.NewUserUsecase(userStore)
 	mediaUsecase := usecases.NewMediaUsecase(mediaStore, fileManager, configuration.S3Config.URL, configuration.S3Config.UploadsPathPrefix, configuration.S3Config.Bucket)
 	videoUsecase := usecases.NewVideoUsecase(mediaUsecase, videoStore, natsqueue)
-	cagesUsecase := usecases.NewCagesUsecase(cagesStore, configuration.CagesConfig.ActivationCodeLength, configuration.CagesConfig.SecretTokenLength)
+	cagesUsecase := usecases.NewCagesUsecase(videoUsecase, cagesStore, configuration.CagesConfig.ActivationCodeLength, configuration.CagesConfig.SecretTokenLength, natsqueue)
 	authUsecase := usecases.NewAuthUsecase(userUsecase, tokenGenerator, cagesUsecase)
 
 	// rest handlers
@@ -157,6 +157,9 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 		},
 		func(c chan error) error {
 			return natsqueue.HandleEncodingJobResult(context.Background(), videoUsecase.ProcessEncodingJobResultQueue, c)
+		},
+		func(c chan error) error {
+			return natsqueue.HandleInternalCageJob(context.Background(), cagesUsecase.ProcessInternalCageJob, c)
 		},
 	},
 		components.WithQueueClose(func(ctx context.Context) error {

@@ -24,12 +24,16 @@ type NatsConfig struct {
 	JobEncoderSubject       string
 	JobEncoderResultSubject string
 
+	InternalCageJobConsumer string
+	InternalCageJobSubject  string
+
 	Streams StreamsConfig
 }
 
 type StreamsConfig struct {
-	Encoder config.StreamConfig
-	Analyst config.StreamConfig
+	Encoder  config.StreamConfig
+	Analyst  config.StreamConfig
+	Internal config.StreamConfig
 }
 
 func loadNatsConfig() NatsConfig {
