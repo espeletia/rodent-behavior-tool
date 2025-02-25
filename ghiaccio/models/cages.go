@@ -20,15 +20,17 @@ type CageMessageRequest struct {
 
 // swagger:model
 type CageMessage struct {
-	CageID    string  `json:"cage_id"`
-	Revision  int64   `json:"revision"`
-	Water     int64   `json:"water"`
-	Food      int64   `json:"food"`
-	Light     int64   `json:"light"`
-	Temp      int64   `json:"temp"`
-	Humidity  int64   `json:"humidity"`
-	VideoUrl  *string `json:"video_url,omitempty"`
-	Timestamp int64   `json:"timestamp"`
+	ID        string         `json:"id"`
+	CageID    string         `json:"cage_id"`
+	Revision  int64          `json:"revision"`
+	Water     int64          `json:"water"`
+	Food      int64          `json:"food"`
+	Light     int64          `json:"light"`
+	Temp      int64          `json:"temp"`
+	Humidity  int64          `json:"humidity"`
+	VideoUrl  *string        `json:"video_url,omitempty"`
+	Video     *VideoAnalysis `json:"video,omitempty"`
+	Timestamp int64          `json:"timestamp"`
 }
 
 // swagger:model

@@ -18,4 +18,5 @@ var (
 	UrlNotFoundError         = commonDomain.Error{Message: "Url not found", Code: http.StatusBadRequest}
 	CageNotFound             = commonDomain.Error{Message: "Cage not found", Code: http.StatusNotFound}
 	InvalidFileType          = commonDomain.Error{Message: "Invalid file type, allowed types: image/jpeg, image/png, video/mp4, video/mpeg", Code: http.StatusBadRequest}
+	NotFound                 = commonDomain.Error{Message: "Not found", Code: http.StatusNotFound}
 )

@@ -7,13 +7,16 @@ import os
 def capture_video(duration=10, output_file='/home/pi/video.mp4'):
     try:
         # libcamera-vid -t 10000 --autofocus-mode continuous --width 1920 --height 1080 -o video.mp4
+        # libcamera-vid -t 10000 --autofocus-mode continuous --width 1920 --height 1080 --roi 0.125,0.125,0.75,0.75 -o video_test.mp4
         command = [
             'libcamera-vid',
             '-t', str(duration * 1000),
             '--width', '1920',
             '--height', '1080',
+            '--roi', '0.125,0.125,0.75,0.75'  # adjustement for v2 cage
             '--output', output_file
         ]
+
         subprocess.run(command, check=True)
 
         print(f"Video captured successfully: {output_file}")

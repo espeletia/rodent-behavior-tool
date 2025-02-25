@@ -119,6 +119,7 @@ func setupService(configuration *config.Config) (*TuskServiceComponents, error) 
 	router.Handle("/cages", commonHandler.Handle(cagesHandler.CreateCage)).Methods("POST")
 	router.Handle("/cages", commonHandler.Handle(cagesHandler.GetCagesForUser)).Methods("GET")
 	router.Handle("/cages/{id}/messages", commonHandler.Handle(cagesHandler.FetchMessages)).Methods("GET")
+	router.Handle("/cages/{id}/messages/{message}", commonHandler.Handle(cagesHandler.FetchMessage)).Methods("GET")
 	router.Handle("/activate/{code}", commonHandler.Handle(cagesHandler.RegisterCage)).Methods("GET")
 
 	// cages internal

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ghiaccio/models"
+	"log"
 	"net/http"
 	"time"
 	"valentine/internal/usecases"
@@ -61,6 +62,22 @@ func (vh *ViewHandler) CageView(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	view.CageView(*cageMessages).Render(ctx, w)
+	return nil
+}
+
+func (vh *ViewHandler) MessageView(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	cageId := mux.Vars(r)["id"]
+	log.Printf("|%s|", cageId)
+	messageId := mux.Vars(r)["message"]
+	log.Printf("|%s|", messageId)
+
+	cageMessage, err := vh.cageUsecase.GetCageMessage(ctx, cageId, messageId)
+	if err != nil {
+		return err
+	}
+
+	view.MessageView(*cageMessage).Render(ctx, w)
 	return nil
 }
 

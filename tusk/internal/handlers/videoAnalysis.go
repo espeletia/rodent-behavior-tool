@@ -216,10 +216,18 @@ func mapVideoToModel(v domain.Video) models.VideoAnalysis {
 		video := mapMediaFileToModel(*v.AnalysedVideo)
 		analysedVideo = &video
 	}
+	var owner, cage *string
+	if v.OwnerId != nil {
+		owner = util.ToPointer(v.OwnerId.String())
+	}
+	if v.CageId != nil {
+		owner = util.ToPointer(v.CageId.String())
+	}
 	return models.VideoAnalysis{
 		ID:            v.ID.String(),
 		Video:         mapMediaFileToModel(v.Video),
-		OwnerId:       v.OwnerId.String(),
+		OwnerId:       owner,
+		CageId:        cage,
 		Description:   v.Description,
 		Name:          v.Name,
 		AnalysedVideo: analysedVideo,

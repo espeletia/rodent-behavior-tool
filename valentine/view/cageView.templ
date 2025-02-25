@@ -1,6 +1,7 @@
 package view
 
 import (
+	"fmt"
 	"ghiaccio/models"
 	"strconv"
 	"time"
@@ -31,39 +32,40 @@ body, html {
 }
 
 templ CageMessagesTable(messages models.CageMessagesCursored) {
-	{ strconv.Itoa(len(messages.Data)) }
-	<table class="table-auto w-full border-collapse border border-slate-400">
-		<thead>
-			<tr>
-				<th class="border border-slate-300">Revision</th>
-				<th class="border border-slate-300">Water</th>
-				<th class="border border-slate-300">Food</th>
-				<th class="border border-slate-300">Light</th>
-				<th class="border border-slate-300">Temperature</th>
-				<th class="border border-slate-300">Humidity</th>
-				<th class="border border-slate-300">Timestamp</th>
-				<th class="border border-slate-300">Video URL</th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, message := range messages.Data {
+	<div class="w-full overflow-x-auto">
+		<table class="table-auto w-full border-collapse  ">
+			<thead class="bg-slate-900 text-slate-100">
 				<tr>
-					<td class="border border-slate-300">{ strconv.FormatInt(message.Revision, 10) }</td>
-					<td class="border border-slate-300">{ strconv.FormatInt(message.Water, 10) }</td>
-					<td class="border border-slate-300">{ strconv.FormatInt(message.Food, 10) }</td>
-					<td class="border border-slate-300">{ strconv.FormatInt(message.Light, 10) }</td>
-					<td class="border border-slate-300">{ strconv.FormatInt(message.Temp, 10) }</td>
-					<td class="border border-slate-300">{ strconv.FormatInt(message.Humidity, 10) }</td>
-					<td class="border border-slate-300">{ time.Unix(message.Timestamp, 0).Format("2006-01-02 15:04:05") }</td>
-					<td class="border border-slate-300">
-						if message.VideoUrl != nil {
-							<a href={ templ.SafeURL(*message.VideoUrl) }>Video</a>
-						} else {
-							N/A
-						}
-					</td>
+					<th class="px-4 py-3 text-left">Revision</th>
+					<th class="px-4 py-3 text-left">Water</th>
+					<th class="px-4 py-3 text-left">Food</th>
+					<th class="px-4 py-3 text-left">Light</th>
+					<th class="px-4 py-3 text-left">Temperature</th>
+					<th class="px-4 py-3 text-left">Humidity</th>
+					<th class="px-4 py-3 text-left">Timestamp</th>
+					<th class="px-4 py-3 text-left">Detail</th>
 				</tr>
-			}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				for _, message := range messages.Data {
+					<tr class="odd:bg-slate-800 even:bg-slate-850 hover:bg-slate-700">
+						<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Revision, 10) }</td>
+						<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Water, 10) }</td>
+						<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Food, 10) }</td>
+						<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Light, 10) }</td>
+						<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Temp, 10) }</td>
+						<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Humidity, 10) }</td>
+						<td class="px-4 py-2 text-center">{ time.Unix(message.Timestamp, 0).Format("2006-01-02 15:04:05") }</td>
+						<td class="px-4 py-2 text-center">
+							<a href={ templ.SafeURL(fmt.Sprintf("/cage/%s/message/%s", message.CageID, message.ID)) }>
+								<button class="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-500">
+									Details
+								</button>
+							</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 }

@@ -3,7 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"ghiaccio/models"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 	"tusk/internal/domain"
 	"tusk/internal/usecases"
@@ -322,6 +324,81 @@ func (ch *CagesHandler) FetchMessages(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
+var GetCageMessageOp = openapi3Struct.Path{
+	Path: "/v1/cages/{id}/messages/{message}",
+	Item: openapi3.PathItem{
+		Get: &openapi3.Operation{
+			Tags:        []string{"Cages"},
+			OperationID: "getCageMessage",
+			Description: "fetch cage message",
+			Parameters: openapi3.Parameters{
+				{
+					Value: &openapi3.Parameter{
+						Name:        "id",
+						In:          "path",
+						Description: "cage id",
+						Required:    true,
+						Schema:      openapi3.NewSchemaRef("#/components/schemas/ID", nil),
+					},
+				},
+				{
+					Value: &openapi3.Parameter{
+						Name:        "message",
+						In:          "path",
+						Description: "message id",
+						Required:    true,
+						Schema:      openapi3.NewSchemaRef("#/components/schemas/ID", nil),
+					},
+				},
+			},
+			Responses: map[string]*openapi3.ResponseRef{
+				"200": {
+					Value: &openapi3.Response{
+						Description: util.ToPointer("Cage message response"),
+						Content: map[string]*openapi3.MediaType{
+							"application/json": {
+								Schema: openapi3.NewSchemaRef("#/components/schemas/CageMessage", nil),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
+func (ch *CagesHandler) FetchMessage(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	vars := mux.Vars(r)
+	cageId := vars["id"]
+	log.Printf("|%s|", cageId)
+	messageId := vars["message"]
+	log.Printf("|%s|", messageId)
+
+	parsedId, err := uuid.Parse(cageId)
+	if err != nil {
+		return err
+	}
+
+	parsedMessageId, err := strconv.ParseInt(messageId, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	data, err := ch.cagesUsecase.GetCageMessage(ctx, parsedId, parsedMessageId)
+	if err != nil {
+		return err
+	}
+	result := mapCageMessageToModels(*data)
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func mapCageMessageToDomain(message models.CageMessageRequest) domain.CageMessageData {
 	timestamp := time.Unix(message.Timestamp, 0)
 	return domain.CageMessageData{
@@ -338,7 +415,12 @@ func mapCageMessageToDomain(message models.CageMessageRequest) domain.CageMessag
 
 func mapCageMessageToModels(message domain.CageMessage) models.CageMessage {
 	cageId := message.CageID.String()
+	var video *models.VideoAnalysis
+	if message.Video != nil {
+		video = util.ToPointer(mapVideoToModel(*message.Video))
+	}
 	return models.CageMessage{
+		ID:        strconv.FormatInt(message.ID, 10),
 		CageID:    cageId,
 		Revision:  message.Revision,
 		Water:     message.Water,
@@ -347,6 +429,7 @@ func mapCageMessageToModels(message domain.CageMessage) models.CageMessage {
 		Temp:      message.Temp,
 		Humidity:  message.Humidity,
 		VideoUrl:  message.VideoUrl,
+		Video:     video,
 		Timestamp: message.Timestamp.Unix(),
 	}
 }

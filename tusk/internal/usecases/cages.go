@@ -68,6 +68,23 @@ func (cu *CagesUsecase) GetCageMessages(ctx context.Context, cageId uuid.UUID, o
 	return messages, nil
 }
 
+func (cu *CagesUsecase) GetCageMessage(ctx context.Context, cageId uuid.UUID, messageId int64) (*domain.CageMessage, error) {
+	usr, ok := middleware.GetUser(ctx)
+	if !ok {
+		return nil, domain.Unauthorized
+	}
+	_, err := cu.cageDatabaseStore.GetCageById(ctx, cageId, usr.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	messages, err := cu.cageDatabaseStore.GetCageMessage(ctx, cageId, messageId)
+	if err != nil {
+		return nil, err
+	}
+	return messages, nil
+}
+
 func (cu *CagesUsecase) CreateNewCage(ctx context.Context) (string, string, error) {
 	zap.L().Info("Creatign new cage")
 	activationCode, err := GenerateActivationCode(int(cu.activationCodeLength))

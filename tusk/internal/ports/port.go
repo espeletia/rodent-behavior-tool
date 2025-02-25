@@ -39,6 +39,7 @@ type CagesDatabaseStore interface {
 	InsertNewCageMessage(ctx context.Context, cageMessage domain.CageMessageData, cageId uuid.UUID) (*domain.CageMessage, error)
 	InsertVideoIDToCageMessage(ctx context.Context, cageMessageID int64, videoID uuid.UUID) error
 	GetCageById(ctx context.Context, cageId, userId uuid.UUID) (*domain.Cage, error)
+	GetCageMessage(ctx context.Context, cageId uuid.UUID, messageID int64) (*domain.CageMessage, error)
 	FetchCageMessages(ctx context.Context, cageId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.CageMessasgesCursored, error)
 }
 

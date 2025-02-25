@@ -1,0 +1,81 @@
+package view
+
+import (
+	"ghiaccio/models"
+	"strconv"
+	"time"
+)
+
+templ MessageView(message models.CageMessage) {
+	<html>
+		<head>
+			<title>Ratt</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+            @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&display=swap');
+
+body, html {
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+    font-family: 'Nunito', sans-serif;
+    border-sizing: border-box;
+}
+            </style>
+		</head>
+		<body class="bg-slate-950 text-slate-50">
+			@Header()
+			<div class="w-full flex flex-wrap justify-center gap-6 p-4">
+				<!-- Video Container -->
+				if message.Video != nil {
+					<div class="flex flex-col items-center bg-slate-900 p-4 rounded-2xl shadow-lg">
+						<video controls class="w-[480px] max-w-full rounded-lg shadow-md">
+							<source src={ message.Video.Video.Url } type="video/mp4"/>
+							Your browser does not support the video tag.
+						</video>
+						<p class="text-center text-sm font-semibold mt-2 text-slate-300">Original Video</p>
+					</div>
+				} else {
+					<h1 class="text-center text-lg font-semibold text-red-400">Video not parsed yet</h1>
+				}
+				if message.Video.AnalysedVideo != nil {
+					<div class="flex flex-col items-center bg-slate-900 p-4 rounded-2xl shadow-lg">
+						<video controls class="w-[480px] max-w-full rounded-lg shadow-md">
+							<source src={ message.Video.AnalysedVideo.Url } type="video/mp4"/>
+							Your browser does not support the video tag.
+						</video>
+						<p class="text-center text-sm font-semibold mt-2 text-slate-300">Analyzed Video</p>
+					</div>
+				} else {
+					<h1 class="text-center text-lg font-semibold text-red-400">Analyzed video not available</h1>
+				}
+			</div>
+			<div class="w-full overflow-x-auto">
+				<table class="table-auto w-full border-collapse rounded-lg shadow-md overflow-hidden">
+					<thead class="bg-slate-900 text-slate-100">
+						<tr>
+							<th class="px-4 py-3 text-left">Revision</th>
+							<th class="px-4 py-3 text-left">Water</th>
+							<th class="px-4 py-3 text-left">Food</th>
+							<th class="px-4 py-3 text-left">Light</th>
+							<th class="px-4 py-3 text-left">Temperature</th>
+							<th class="px-4 py-3 text-left">Humidity</th>
+							<th class="px-4 py-3 text-left">Timestamp</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="odd:bg-slate-800 even:bg-slate-850 hover:bg-slate-700">
+							<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Revision, 10) }</td>
+							<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Water, 10) }</td>
+							<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Food, 10) }</td>
+							<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Light, 10) }</td>
+							<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Temp, 10) }</td>
+							<td class="px-4 py-2 text-center">{ strconv.FormatInt(message.Humidity, 10) }</td>
+							<td class="px-4 py-2 text-center">{ time.Unix(message.Timestamp, 0).Format("2006-01-02 15:04:05") }</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</body>
+	</html>
+}

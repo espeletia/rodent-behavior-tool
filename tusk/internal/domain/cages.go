@@ -30,6 +30,7 @@ type CageMessage struct {
 	Humidity  int64
 	VideoUrl  *string
 	VideoID   *uuid.UUID
+	Video     *Video
 	Timestamp time.Time
 }
 

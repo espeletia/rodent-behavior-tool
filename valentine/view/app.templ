@@ -144,54 +144,70 @@ func Greeting(displayName string) string {
 
 // Component to display VideoAnalysis in a table
 templ VideoAnalysisTable(analyses []models.VideoAnalysis) {
-	<table class="table-auto w-full">
-		<thead>
-			<tr>
-				<th>ID</th>
-				<th>Name</th>
-				<th>Owner ID</th>
-				<th>Description</th>
-				<th>Video</th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, analysis := range analyses {
+	<div class="w-full overflow-x-auto">
+		<table class="table-auto w-full">
+			<thead class="bg-slate-900 text-slate-100">
 				<tr>
-					<td>{ analysis.ID }</td>
-					<td>{ analysis.Name }</td>
-					<td>{ analysis.OwnerId }</td>
-					<td>
-						if analysis.Description != nil {
-							{ *analysis.Description }
-						} else {
-							N/A
-						}
-					</td>
-					<td>
-						<a href={ templ.SafeURL(analysis.Video.Url) }>Video</a>
-					</td>
+					<th class="px-4 py-3 text-left">ID</th>
+					<th class="px-4 py-3 text-left">Name</th>
+					<th class="px-4 py-3 text-left">Owner ID</th>
+					<th class="px-4 py-3 text-left">Description</th>
+					<th class="px-4 py-3 text-left">Video</th>
 				</tr>
-			}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				for _, analysis := range analyses {
+					<tr class="odd:bg-slate-800 even:bg-slate-850 hover:bg-slate-700">
+						<td class="px-4 py-2 text-center">{ analysis.ID }</td>
+						<td class="px-4 py-2 text-center">{ analysis.Name }</td>
+						<td class="px-4 py-2 text-center">
+							if analysis.OwnerId != nil {
+								{ *analysis.OwnerId }
+							} else {
+								N/A
+							}
+						</td>
+						<td class="px-4 py-2 text-center">
+							if analysis.Description != nil {
+								{ *analysis.Description }
+							} else {
+								N/A
+							}
+						</td>
+						<td class="px-4 py-2 text-center">
+							<a href={ templ.SafeURL(analysis.Video.Url) }>Video</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 }
 
 // Component to display Cage in a table
 templ CageTable(cages []models.Cage) {
-	<table class="table-auto w-full">
-		<thead>
-			<tr>
-				<th>ID</th>
-				<th>Name</th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, cage := range cages {
-				<tr>
-					<td><a href={ templ.SafeURL(fmt.Sprintf("/cage/%s", cage.ID)) }>{ cage.ID }</a></td>
-					<td>{ cage.Name }</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+	<div class="w-full flex justify-center">
+		<div class="w-full max-w-md overflow-x-auto rounded-lg shadow-md">
+			<table class="table-auto w-full border-collapse rounded-lg overflow-hidden">
+				<thead class="bg-slate-900 text-slate-100">
+					<tr>
+						<th class="px-6 py-3 text-left">ID</th>
+						<th class="px-6 py-3 text-left">Name</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, cage := range cages {
+						<tr class="odd:bg-slate-800 even:bg-slate-850 hover:bg-slate-700">
+							<td class="px-6 py-3 text-center">
+								<a href={ templ.SafeURL(fmt.Sprintf("/cage/%s", cage.ID)) } class="text-blue-400 hover:underline">
+									{ cage.ID }
+								</a>
+							</td>
+							<td class="px-6 py-3 text-center">{ cage.Name }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 }

@@ -85,7 +85,6 @@ func main() {
 	}
 
 	p := openapi3Struct.NewParser(t, openapi3Struct.WithPackagePaths([]string{"./../../ghiaccio/models/"}))
-	log.Println("HERE FUCKO")
 	err := p.ParseSchemasFromStructs()
 	if err != nil {
 		log.Fatalf("ParseSchemasFromStructs %v", err)
@@ -105,6 +104,7 @@ func main() {
 	p.AddPath(handlers.CageSendMessageOp)
 	p.AddPath(handlers.GetCageMessagesOp)
 	p.AddPath(handlers.GetVideosCursoredOp)
+	p.AddPath(handlers.GetCageMessageOp)
 
 	err = p.Validate(context.Background())
 	if err != nil {

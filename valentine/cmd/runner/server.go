@@ -60,6 +60,7 @@ func setupService(configuration *config.Config) (*ValentineServiceComponents, er
 	router.Handle("/", commonHandler.Handle(viewHandler.Render)).Methods("GET")
 	router.Handle("/app", commonHandler.Handle(viewHandler.App)).Methods("GET")
 	router.Handle("/cage/{id}", commonHandler.Handle(viewHandler.CageView)).Methods("GET")
+	router.Handle("/cage/{id}/message/{message}", commonHandler.Handle(viewHandler.MessageView)).Methods("GET")
 	router.Handle("/login", commonHandler.Handle(viewHandler.Login)).Methods("GET")
 	router.Handle("/about", commonHandler.Handle(viewHandler.About)).Methods("GET")
 	router.Handle("/register", commonHandler.Handle(viewHandler.Register)).Methods("GET")

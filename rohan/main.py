@@ -6,6 +6,7 @@ import asyncio
 
 from lcd.lcd import SmallDisplay
 from configuration.config import API_URL, DURATION, CONFIG_FILE
+from temp.temp import TempSensor
 from camera.camera import capture_video, send_video_to_api
 from ultrasonic.ultrasonic import UltrasonicSensor
 from light.light import LightSensor
@@ -31,7 +32,7 @@ def make_request(url, method='GET', data=None, headers=None):
         return f"An error occurred: {e}"
 
 
-async def async_video_task(video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token):
+async def async_video_task(video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token, temp):
     video_upload_response = await send_video_to_api(video_file, f"{API_URL}/v1/upload")
     if video_upload_response:
         print(f"Lux (calculated): {lux}")
@@ -41,6 +42,7 @@ async def async_video_task(video_file, lux, foodDistance, waterDistance, current
             int(foodDistance),
             int(waterDistance),
             1,
+            int(temp),
             current_timestamp,
             video_upload_response.get('upload_url')
         )
@@ -49,10 +51,10 @@ async def async_video_task(video_file, lux, foodDistance, waterDistance, current
     print(f"Deleted file: {video_file}")
 
 
-def run_async_video_task(video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token):
+def run_async_video_task(video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token, temp):
     # Run the asynchronous video task in the background
     asyncio.create_task(async_video_task(
-        video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token))
+        video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token, temp))
 
 
 def init_cage():
@@ -127,6 +129,7 @@ async def main():
     water = UltrasonicSensor(23, 17)
     light = LightSensor()
     display = SmallDisplay()
+    dth = TempSensor()
     activation, secret_token = init_cage()
     if activation and secret_token:
         print(activation, secret_token)
@@ -147,8 +150,9 @@ async def main():
                 lux = light.read_tsl2591()
                 print(f"food left: {foodDistance}cm")
                 print(f"water left: {waterDistance}")
+                temp, hum = dth.fetch()
                 run_async_video_task(
-                    video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token)
+                    video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token, temp)
                 # Add a small delay to avoid busy-waiting
                 await asyncio.sleep(1)
 

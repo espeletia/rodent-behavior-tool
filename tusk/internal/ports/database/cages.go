@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 	"tusk/internal/domain"
 	"tusk/internal/ports/database/gen/ratt-api/public/model"
@@ -182,27 +183,93 @@ func (cdbs *CagesDatabaseStore) InsertVideoIDToCageMessage(ctx context.Context, 
 	return nil
 }
 
+func (cdbs *CagesDatabaseStore) GetCageMessage(ctx context.Context, cageId uuid.UUID, messageID int64) (*domain.CageMessage, error) {
+	stmt := table.CageMessages.SELECT(
+		table.CageMessages.AllColumns,
+		table.VideoAnalysis.AllColumns,
+		table.Media.AllColumns,
+	).FROM(
+		table.CageMessages.LEFT_JOIN(
+			table.VideoAnalysis, table.CageMessages.VideoID.EQ(table.VideoAnalysis.ID),
+		).LEFT_JOIN(
+			table.Media, postgres.OR(
+				table.Media.ID.EQ(table.VideoAnalysis.MediaID),
+				table.Media.ID.EQ(table.VideoAnalysis.AnalysedVideo),
+			),
+		),
+	).
+		WHERE(table.CageMessages.ID.IN(postgres.SELECT(table.CageMessages.ID).FROM(table.CageMessages).
+			WHERE(postgres.AND(
+				table.CageMessages.CageID.EQ(postgres.UUID(cageId)),
+				table.CageMessages.ID.EQ(postgres.Int(messageID)),
+			)).
+			ORDER_BY(table.CageMessages.TimeSent.DESC()),
+		)).
+		ORDER_BY(table.CageMessages.TimeSent.DESC())
+	log.Println(stmt.DebugSql())
+	dest := []cageMessages{}
+	err := stmt.QueryContext(ctx, cdbs.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	if len(dest) != 1 {
+		return nil, domain.NotFound
+	}
+	data := mapCageMessageSpecialToDomain(dest[0])
+	log.Println(data)
+	return &data, nil
+
+}
+
 func (cdbs *CagesDatabaseStore) FetchCageMessages(ctx context.Context, cageId uuid.UUID, offsetLimit domain.OffsetLimit) (*domain.CageMessasgesCursored, error) {
-	stmt := table.CageMessages.SELECT(table.CageMessages.AllColumns).
-		WHERE(table.CageMessages.CageID.EQ(postgres.UUID(cageId))).
-		ORDER_BY(table.CageMessages.TimeSent.DESC()).
-		OFFSET(offsetLimit.Offset).
-		LIMIT(int64(offsetLimit.Limit))
+	stmt := table.CageMessages.SELECT(
+		// table.CageMessages.AS("cte").AllColumns,
+		table.CageMessages.AllColumns,
+		table.VideoAnalysis.AllColumns,
+		table.Media.AllColumns,
+	).FROM(
+		// postgres.CTE("cte"
+		//
+		// ),
+		table.CageMessages.LEFT_JOIN(
+			table.VideoAnalysis, table.CageMessages.VideoID.EQ(table.VideoAnalysis.ID),
+		).LEFT_JOIN(
+			table.Media, postgres.OR(
+				table.Media.ID.EQ(table.VideoAnalysis.MediaID),
+				table.Media.ID.EQ(table.VideoAnalysis.AnalysedVideo),
+			),
+		),
+	).
+		WHERE(table.CageMessages.ID.IN(postgres.SELECT(table.CageMessages.ID).FROM(table.CageMessages).
+			WHERE(table.CageMessages.CageID.EQ(postgres.UUID(cageId))).
+			OFFSET(offsetLimit.Offset).
+			LIMIT(int64(offsetLimit.Limit)).
+			ORDER_BY(table.CageMessages.TimeSent.DESC()),
+		)).
+		ORDER_BY(table.CageMessages.TimeSent.DESC())
+		// LIMIT(int64(offsetLimit.Limit))
 
-	dest := []model.CageMessages{}
-
+	// zap.L().Info("Debug sql", zap.String("sql", stmt.DebugSql()))
+	dest := []cageMessages{}
+	log.Println(stmt.DebugSql())
 	err := stmt.QueryContext(ctx, cdbs.db, &dest)
 	if err != nil {
 		return nil, err
 	}
 	data := []domain.CageMessage{}
 	for _, message := range dest {
-		data = append(data, mapCageMessageToDomain(message))
+		data = append(data, mapCageMessageSpecialToDomain(message))
 	}
+	log.Println(data)
 	return &domain.CageMessasgesCursored{
 		Data:   data,
 		Cursor: util.BuildCursorWithOffsetCursor(data, offsetLimit.Offset, offsetLimit.Limit),
 	}, nil
+}
+
+type cageMessages struct {
+	model.CageMessages
+	VideoAnalysis *video
 }
 
 func mapCageMessageToDomain(message model.CageMessages) domain.CageMessage {
@@ -215,6 +282,27 @@ func mapCageMessageToDomain(message model.CageMessages) domain.CageMessage {
 		Light:     int64(message.Light),
 		Temp:      int64(message.Temp),
 		Humidity:  int64(message.Humidity),
+		VideoUrl:  message.VideoURL,
+		VideoID:   message.VideoID,
+		Timestamp: message.TimeSent,
+	}
+}
+
+func mapCageMessageSpecialToDomain(message cageMessages) domain.CageMessage {
+	var video *domain.Video
+	if message.VideoAnalysis != nil {
+		video = validateAndMapVideoAnalysis(*message.VideoAnalysis)
+	}
+	return domain.CageMessage{
+		ID:        int64(message.ID),
+		CageID:    message.CageID,
+		Revision:  int64(message.Revision),
+		Water:     int64(message.Water),
+		Food:      int64(message.Food),
+		Light:     int64(message.Light),
+		Temp:      int64(message.Temp),
+		Humidity:  int64(message.Humidity),
+		Video:     video,
 		VideoUrl:  message.VideoURL,
 		VideoID:   message.VideoID,
 		Timestamp: message.TimeSent,
