@@ -95,13 +95,13 @@ def poll_cage_status(secret_token):
         return f"Error polling cage status: {e}"
 
 
-def send_cage_message(secret_token, light, food, water, revision, timestamp, videoUrl):
+def send_cage_message(secret_token, light, food, water, revision, temp, timestamp, videoUrl):
     message = {
         "food": food,
         "humidity": 0,
         "light": light,
         "revision": revision,
-        "temp": 0,
+        "temp": temp,
         "timestamp": timestamp,
         "video_url": videoUrl,
         "water": water
