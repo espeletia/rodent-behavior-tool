@@ -150,6 +150,7 @@ async def main():
                 lux = light.read_tsl2591()
                 print(f"food left: {foodDistance}cm")
                 print(f"water left: {waterDistance}")
+                print(f"video: {video_file}")
                 temp, hum = dth.fetch()
                 run_async_video_task(
                     video_file, lux, foodDistance, waterDistance, current_timestamp, secret_token, temp)
