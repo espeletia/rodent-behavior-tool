@@ -44,8 +44,10 @@ func (vu *VideoUsecase) createNewVideo(ctx context.Context, data domain.CreateVi
 		return nil, domain.BadRequest
 	}
 	videoId := uuid.New()
+	zap.L().Info("Processing file")
 	videoMedia, err := vu.mediaUsecase.ProcessUploadedFile(ctx, data.VideoUrl, "video", videoId.String())
 	if err != nil {
+		zap.L().Error("yo! file upload doesn't work")
 		return nil, err
 	}
 	video, err := vu.videoDatabaseStore.Create(ctx,

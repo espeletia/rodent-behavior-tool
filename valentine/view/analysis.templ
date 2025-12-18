@@ -1,0 +1,48 @@
+package view
+
+templ UploadFormView() {
+	<html>
+		<head>
+			<title>Ratt - Upload</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+			@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&display=swap');
+
+			body, html {
+				min-height: 100vh;
+				margin: 0;
+				overflow-x: hidden;
+				font-family: 'Nunito', sans-serif;
+				box-sizing: border-box;
+			}
+			</style>
+		</head>
+		<body class="bg-slate-950 text-slate-50 flex items-center justify-center min-h-screen relative">
+			<!-- ✅ Loading Overlay -->
+			<div id="loadingOverlay" class="hidden absolute inset-0 bg-slate-950 bg-opacity-90 flex flex-col items-center justify-center z-50">
+				<svg class="animate-spin h-10 w-10 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+				</svg>
+				<p class="text-white font-semibold text-lg">Uploading...</p>
+			</div>
+			<!-- ✅ Upload Form -->
+			<form
+				action="/new/analysis"
+				method="POST"
+				enctype="multipart/form-data"
+				class="bg-slate-800 p-8 rounded-lg shadow-lg w-96"
+				onsubmit="document.getElementById('loadingOverlay').classList.remove('hidden')"
+			>
+				<h1 class="text-2xl font-bold mb-6 text-center">Upload File</h1>
+				<label for="name" class="block mb-2 text-sm font-medium">Name</label>
+				<input type="text" name="name" required class="w-full px-4 py-2 mb-4 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+				<label for="file" class="block mb-2 text-sm font-medium">MP4 File</label>
+				<input type="file" name="file" accept=".mp4" required class="w-full mb-4 text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"/>
+				<label for="description" class="block mb-2 text-sm font-medium">Description (optional)</label>
+				<textarea name="description" rows="3" class="w-full px-4 py-2 mb-6 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+				<button type="submit" class="w-full bg-blue-600 py-2 rounded-lg hover:bg-blue-700 font-bold">Upload</button>
+			</form>
+		</body>
+	</html>
+}

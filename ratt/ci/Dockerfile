@@ -1,4 +1,4 @@
-FROM ultralytics/ultralytics:8.2.102
+FROM ultralytics/ultralytics:8.3.100
 
 WORKDIR /app
 ADD ./ratt/requirements.txt /app/requirements.txt

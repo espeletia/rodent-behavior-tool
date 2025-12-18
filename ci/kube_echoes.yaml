@@ -31,6 +31,12 @@ spec:
         - name: echoes
           image: echoes
           env:
+            - name: S3_URL
+              value: "https://ratt.fra1.digitaloceanspaces.com"
+            - name: S3_ACCESS_KEY
+              value: DO004D6GFANY8BEFXLNT
+            - name: S3_SECRET_ACCESS_KEY
+              value: q+wF4ZlzddjYAAXYL7G4lgvprpq/4zqOTPCHBFOb1Rg
             # - name: FLASK_PORT
             #   value: "8081"
           # livenessProbe:

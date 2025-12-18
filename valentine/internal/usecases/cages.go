@@ -37,6 +37,15 @@ func (cu *CageUsecase) GetCageMessages(ctx context.Context, cageId string) (*mod
 	return result, nil
 }
 
+func (cu *CageUsecase) ActivateCage(ctx context.Context, code string) error {
+	err := GenericFetch204(ctx, cu.apiUrl+"/v1/activate/"+code, "GET", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (cu *CageUsecase) GetCageMessage(ctx context.Context, cageId, messageId string) (*models.CageMessage, error) {
 	log.Println(cageId, messageId)
 	result, err := GenericFetch[models.CageMessage](ctx, cu.apiUrl+"/v1/cages/"+cageId+"/messages/"+messageId, "GET", nil)

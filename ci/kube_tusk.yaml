@@ -39,6 +39,12 @@ spec:
               value: "8080"
             - name: DATABASE_URL
               value: "postgres://postgres:postgres@postgresql-ratt-api:5432/ratt-api?sslmode=disable"
+            - name: S3_URL
+              value: "https://ratt.fra1.digitaloceanspaces.com"
+            - name: S3_ACCESS_KEY
+              value: DO004D6GFANY8BEFXLNT
+            - name: S3_SECRET_ACCESS_KEY
+              value: q+wF4ZlzddjYAAXYL7G4lgvprpq/4zqOTPCHBFOb1Rg
             # - name: FLASK_PORT
             #   value: "8081"
           # livenessProbe:
@@ -75,6 +81,12 @@ spec:
               value: "postgres://postgres:postgres@postgresql-ratt-api:5432/ratt-api?sslmode=disable"
             - name: TUSK_MODE
               value: "queue"
+            - name: S3_URL
+              value: "https://ratt.fra1.digitaloceanspaces.com"
+            - name: S3_ACCESS_KEY
+              value: DO004D6GFANY8BEFXLNT
+            - name: S3_SECRET_ACCESS_KEY
+              value: q+wF4ZlzddjYAAXYL7G4lgvprpq/4zqOTPCHBFOb1Rg
             # - name: FLASK_PORT
             #   value: "8081"
           # livenessProbe:

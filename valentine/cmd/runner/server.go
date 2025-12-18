@@ -52,13 +52,18 @@ func setupService(configuration *config.Config) (*ValentineServiceComponents, er
 	userUsecase := usecases.NewUserUsecase(http.Client{}, configuration.TuskConfig.URL)
 	cageUsecase := usecases.NewCageUsecase(http.Client{}, configuration.TuskConfig.URL)
 	videoUsecase := usecases.NewVideoUsecase(http.Client{}, configuration.TuskConfig.URL)
+	fetcher := usecases.NewRestFetcher(http.Client{}, configuration.TuskConfig.URL)
 
-	viewHandler := handlers.NewViewHandler(userUsecase, cageUsecase, videoUsecase)
+	viewHandler := handlers.NewViewHandler(userUsecase, cageUsecase, videoUsecase, fetcher)
 
 	commonHandler := handlers.NewCommonHandler()
 
 	router.Handle("/", commonHandler.Handle(viewHandler.Render)).Methods("GET")
 	router.Handle("/app", commonHandler.Handle(viewHandler.App)).Methods("GET")
+	router.Handle("/new/analysis", commonHandler.Handle(viewHandler.UploadAnalysis)).Methods("GET")
+	router.Handle("/new/analysis", commonHandler.Handle(viewHandler.HandleUploadAnalysis)).Methods("POST")
+	router.Handle("/new/cage", commonHandler.Handle(viewHandler.RegisterCage)).Methods("GET")
+	router.Handle("/new/cage", commonHandler.Handle(viewHandler.HandleCageLink)).Methods("POST")
 	router.Handle("/cage/{id}", commonHandler.Handle(viewHandler.CageView)).Methods("GET")
 	router.Handle("/cage/{id}/message/{message}", commonHandler.Handle(viewHandler.MessageView)).Methods("GET")
 	router.Handle("/login", commonHandler.Handle(viewHandler.Login)).Methods("GET")

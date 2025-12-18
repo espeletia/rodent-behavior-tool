@@ -129,6 +129,7 @@ func (hfm *S3FileManager) CopyS3URI(ctx context.Context, sourceURL, destURL util
 	// 	ACL:        types.ObjectCannedACLPublicRead,
 	// })
 
+	zap.L().Info("downloading file for copy")
 	obj, err := hfm.s3client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: sourceURL.Bucket,
 		Key:    sourceURL.Key,
@@ -137,6 +138,7 @@ func (hfm *S3FileManager) CopyS3URI(ctx context.Context, sourceURL, destURL util
 		return err
 	}
 
+	zap.L().Info("uploading file for copy")
 	uploader := manager.NewUploader(hfm.s3client)
 	_, err = uploader.Upload(ctx, &s3.PutObjectInput{
 		Bucket:      destURL.Bucket,
@@ -145,9 +147,7 @@ func (hfm *S3FileManager) CopyS3URI(ctx context.Context, sourceURL, destURL util
 		ContentType: obj.ContentType,
 		ACL:         types.ObjectCannedACLPublicRead,
 	})
-	if err != nil {
-		return err
-	}
+	zap.L().Info("File uploaded for copy")
 
 	if err != nil {
 		return err
